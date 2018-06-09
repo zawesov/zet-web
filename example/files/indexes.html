@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML><HEAD><TITLE>KEEP-WRITE</TITLE>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+<META NAME="keywords"
+  CONTENT="">
+
+<script  language='javascript'>
+
+// var ws = new WebSocket("wss://127.0.0.1:11236/proxy");
+ var ws = new WebSocket("wss://localhost:11236/proxy");
+ ws.onopen = function() { alert("Socket is open!"); };
+			
+ ws.onclose = function() { alert("Connection is closed!"); };
+			
+ ws.onmessage = function(evt) 
+ { 
+  alert("Recieved message: "+evt.data.length);
+  document.getElementById("response").value+=(evt.data+"\n-------------------------------------\n");
+ };
+
+ function send()
+ {
+  if(ws.readyState != 1)
+  {
+   alert("readyState:"+ws.readyState);
+   return;
+  }
+  ws.send(document.getElementById("request").value);
+  alert("Sended text: "+document.getElementById("request").value.length);
+ };
+
+</script>
+
+</HEAD>
+
+<style type='text/css'>
+<!--
+a.t {text-decoration:none ; color:#F0FFF0; font-face:Helvetica,Arial; font-size:18; text-align:center; background-color:#191970; margin:0 0 0 0}
+//-->
+</style>
+
+<BODY bgcolor='#FFFAF0'>
+
+<DIV id='main'>
+  <CENTER>
+  <TABLE border=1 cellPadding=3 cellSpacing=0>
+  <TR><TD><FONT color='purple'>REQUEST</FONT></TD><TD><TEXTAREA id='request' name="TEXT" rows="6" cols="55">
+THE COMEDY OF ERRORS
+by William Shakespeare
+PERSONS REPRESENTED.
+SOLINUS, Duke of Ephesus.
+AEGEON, a Merchant of Syracuse.
+ANTIPHOLUS OF EPHESUS, Twin brothers and sons to Aegion and
+ANTIPHOLUS OF SYRACUSE, and Aemelia, but unknown to each other.
+DROMIO OF EPHESUS, Twin brothers, and attendants on
+DROMIO OF SYRACUSE, the two Antipholuses.
+BALTHAZAR, a Merchant.
+ANGELO, a Goldsmith.
+A MERCHANT, friend to Antipholus of Syracuse.
+PINCH, a Schoolmaster and a Conjurer.
+AEMILIA, Wife to Aegeon, an Abbess at Ephesus.
+ADRIANA, Wife to Antipholus of Ephesus.
+LUCIANA, her Sister.
+LUCE, her Servant.
+A COURTEZAN
+Gaoler, Officers, Attendants
+SCENE: Ephesus
+THE COMEDY OF ERRORS
+ACT I.
+SCENE 1. A hall in the DUKE'S palace.
+[Enter the DUKE, AEGEON, GAOLER, OFFICERS, and other ATTENDANTS.]
+AEGEON.
+Proceed, Solinus, to procure my fall,
+And, by the doom of death, end woes and all.
+DUKE.
+Merchant of Syracuse, plead no more;
+I am not partial to infringe our laws:
+The enmity and discord which of late
+Sprung from the rancorous outrage of your duke
+To merchants, our well-dealing countrymen,--
+Who, wanting guilders to redeem their lives,
+Have seal'd his rigorous statutes with their bloods,--
+Excludes all pity from our threat'ning looks.
+For, since the mortal and intestine jars
+'Twixt thy seditious countrymen and us,
+It hath in solemn synods been decreed,
+Both by the Syracusians and ourselves,
+To admit no traffic to our adverse towns;
+Nay, more,
+If any born at Ephesus be seen
+At any Syracusian marts and fairs;--
+Again, if any Syracusian born
+Come to the bay of Ephesus, he dies,
+His goods confiscate to the Duke's dispose;
+Unless a thousand marks be levied,
+To quit the penalty and to ransom him.--
+Thy substance, valued at the highest rate,
+Cannot amount unto a hundred marks:
+Therefore by law thou art condemn'd to die.
+THE END
+  </TEXTAREA></TD></TR>
+  <TR><TD><FONT color='purple'>RESPONSE</FONT></TD><TD><TEXTAREA id='response' name="TEXT" rows="20" cols="55"></TEXTAREA></TD></TR>
+  </TABLE>
+  <BUTTON type="button" onclick="send()">Send data</BUTTON>
+  </CENTER>
+</DIV>
+<br><CENTER><SMALL>&copy; zzz</SMALL></CENTER>
+
+</BODY></HTML>
+
