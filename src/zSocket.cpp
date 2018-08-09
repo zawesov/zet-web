@@ -520,9 +520,10 @@ ssize_t ZNSOCKET::read(int s, std::string &ret)
  return n_r;
 };
 
-ssize_t ZNSOCKET::read(int s, std::string &ret,char r[65536])
+ssize_t ZNSOCKET::read(int s, std::string &ret, char* r, size_t len)
 {
- if(s < 0) return -1; 
+ if(s < 0) return -1;
+ if(len == 0) return 0;
 /*
  fd_set tExc;
  FD_ZERO(&tExc);
@@ -539,7 +540,7 @@ ssize_t ZNSOCKET::read(int s, std::string &ret,char r[65536])
  ssize_t n_r=0;
  while(1)
  {
-  n= ::recv(s,r,65536,0);
+  n= ::recv(s,r,len,0);
   if(n == 0) return -1;
   if(n < 0)
   {
@@ -557,9 +558,12 @@ ssize_t ZNSOCKET::read(int s, std::string &ret,char r[65536])
  return n_r;
 };
 
+ssize_t ZNSOCKET::read(int s, std::string &ret, char r[65536]) { return ZNSOCKET::read(s, ret, r, 65536); };
+
 ssize_t ZNSOCKET::read(int s, char* ret, size_t len)
 {
- if(s < 0) return -1; 
+ if(s < 0) return -1;
+ if(len == 0) return 0;
  ssize_t n= ::recv(s,ret,len,0);
  if(n == 0) return -1;
  if(n < 0)
@@ -923,7 +927,7 @@ ssize_t ZNSOCKET::read(SSL* c, std::string &ret)
 // return 0;
 };
 
-ssize_t ZNSOCKET::read(SSL* c, std::string &ret,char r[65536])
+ssize_t ZNSOCKET::read(SSL* c, std::string &ret,char* r, size_t len)
 {
  if(c == NULL) return -1; 
  int s=::SSL_get_fd(c);
@@ -943,7 +947,7 @@ ssize_t ZNSOCKET::read(SSL* c, std::string &ret,char r[65536])
  ssize_t n_r=0;
  for(int n;;)
  { 
-  n= ::SSL_read(c,r,65536);
+  n= ::SSL_read(c,r,len);
   if(n <= 0)
   {
    n=::SSL_get_error(c, n);
@@ -953,6 +957,8 @@ ssize_t ZNSOCKET::read(SSL* c, std::string &ret,char r[65536])
   else { ret.append(r,(size_t) n); n_r+=n; }
  }
 };
+
+ssize_t ZNSOCKET::read(SSL* c, std::string &ret, char r[65536]) { return ZNSOCKET::read(c, ret, r, 65536); };
 
 ssize_t ZNSOCKET::read(SSL* c, char* ret, size_t len)
 {

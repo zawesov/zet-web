@@ -39,6 +39,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #endif // __GNUG__
 
 
+#define ZLOG_BUF_SIZE 65536000
+
+
 zLog zLog::Log(ZLOG_PATH, ZLOG_SYNC);
 
 zLog::zLog():
@@ -105,7 +108,11 @@ void zLog::update() const
   m_storage = p;
  }
  std::string q;
- for(std::list<std::string>::const_iterator k=m_storage->begin(); k != m_storage->end(); ++k) { q+=*k; }
+ for(std::list<std::string>::const_iterator k=m_storage->begin(); k != m_storage->end(); ++k)
+ {
+  q+=*k;
+  if(ZLOG_BUF_SIZE < q.size()) { zFile::write(q); q.clear(); }
+ }
  m_storage->clear();
 /*
  if(m_level >= ZLOG_DEBUG)

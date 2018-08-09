@@ -287,31 +287,32 @@ ZFINFO ZNFILE::info(const std::string &path)
 
 bool ZNFILE::read(std::string& ret,const std::string &path,ulonglong start,size_t number)
 {
- ret="";
+// ret="";
  longlong s=ZNFILE::size(path);
  if(s <= ((longlong) start)) return false;
  size_t n=number;
  if((s-start) < n) n=(s-start);
+ size_t l=ret.size();
 #if defined(_WIN32) || defined(_WIN64)
  HANDLE f=::CreateFile(ZNSTR::trim(path).c_str(),GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
  if(f == INVALID_HANDLE_VALUE) return false;
  LONG ll=(LONG) start;
  LONG lh=(LONG) (start >> 32);
  if(::SetFilePointer(f,ll,&lh,FILE_BEGIN) == INVALID_SET_FILE_POINTER) { ::CloseHandle(f); return false; }
- ret.resize(n); DWORD k;
- if(ReadFile(f,(void*) ret.c_str(),n,&k,NULL) == 0) { ::CloseHandle(f); ret.resize(0); return false; }
- ::CloseHandle(f); ret.resize(k);
+ ret.resize(l+n); DWORD k;
+ if(ReadFile(f,(void*) (ret.c_str()+l),n,&k,NULL) == 0) { ::CloseHandle(f); ret.resize(l); return false; }
+ ::CloseHandle(f); ret.resize(l+k);
  return true;
 #else
 #if defined(__GNUG__) || defined(__CYGWIN__) || defined(__linux__)
  int f=::open(ZNSTR::trim(path).c_str(),O_RDONLY);
  if(f < 0) return false;
  if(::lseek(f,start,SEEK_SET) < 0) { ::close(f); return false; }
- ret.resize(n);
- ssize_t k=::read(f,(void*) ret.c_str(),n);
+ ret.resize(l+n);
+ ssize_t k=::read(f,(void*) (ret.c_str()+l),n);
  ::close(f);
- if(k < 0) { ret.resize(0); return false; }
- ret.resize(k);
+ if(k < 0) { ret.resize(l); return false; }
+ ret.resize(l+k);
  return true;
 #else
  return false;
@@ -461,7 +462,7 @@ longlong zFile::size() const
 
 bool zFile::read(std::string& ret,ulonglong start, size_t number) const
 {
- ret="";
+// ret="";
 #if defined(_WIN32) || defined(_WIN64)
  if(f == INVALID_HANDLE_VALUE) return false;
 #else
@@ -473,20 +474,21 @@ bool zFile::read(std::string& ret,ulonglong start, size_t number) const
  if(s <= ((longlong) start)) return false;
  size_t n=number;
  if((s-start) < n) n=(s-start);
+ size_t l=ret.size();
 #if defined(_WIN32) || defined(_WIN64)
  LONG ll=(LONG) start;
  LONG lh=(LONG) (start >> 32);
  if(::SetFilePointer(f,ll,&lh,FILE_BEGIN) == INVALID_SET_FILE_POINTER) { return false; }
- ret.resize(n); DWORD k;
- if(ReadFile(f,(void*) ret.c_str(),n,&k,NULL) == 0) { ret.resize(0); return false; }
- ret.resize(k); return true;
+ ret.resize(l+n); DWORD k;
+ if(ReadFile(f,(void*) (ret.c_str()+l),n,&k,NULL) == 0) { ret.resize(l); return false; }
+ ret.resize(l+k); return true;
 #else
 #if defined(__GNUG__) || defined(__CYGWIN__) || defined(__linux__) 
  if(::lseek(f,start,SEEK_SET) < 0) { return false; }
- ret.resize(n);
- ssize_t k=::read(f,(void*) ret.c_str(),n);
- if(k < 0) { ret.resize(0); return false; }
- ret.resize(k); return true;
+ ret.resize(l+n);
+ ssize_t k=::read(f,(void*) (ret.c_str()+l),n);
+ if(k < 0) { ret.resize(l); return false; }
+ ret.resize(l+k); return true;
 #else
  return false;
 #endif

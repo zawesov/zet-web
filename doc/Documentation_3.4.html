@@ -48,6 +48,7 @@
 
 <li style="margin-left: 15"><span class="contents"> Pools </span></li>
 <li style="margin-left: 30"><a href="#p_Pool"><span class="contents"> Pool </span> </a></li>
+<li style="margin-left: 30"><a href="#p_SynchPool"><span class="contents"> Synch Pool </span> </a></li>
 <li style="margin-left: 30"><a href="#p_Queue_Pool"><span class="contents"> Queue Pool </span> </a></li>
 <li style="margin-left: 30"><a href="#p_Message_Pool"><span class="contents"> Message Pool </span> </a></li>
 
@@ -870,6 +871,7 @@ To write log use the following macroses (zLog.h):<br><br>
 <hr width=100% color= #000000 align="center">
 <div  class="doctext">
 <span class="ifc">ssize_t read(int s, std::string &ret);</span><br>
+<span class="ifc">ssize_t read(int s, std::string &ret, char* r, size_t len);</span><br>
 <span class="ifc">ssize_t read(int s, std::string &ret, char r[65536]);</span><br>
 <span class="ifc">ssize_t read(int s, char* ret, size_t len);</span><br><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reads in ret buffer with timeout=0 from the socket and returns the number of read bytes.<br>
@@ -1014,7 +1016,8 @@ To write log use the following macroses (zLog.h):<br><br>
 <hr width=100% color= #000000 align="center">
 <div  class="doctext">
 <span class="ifc">ssize_t read(SSL* s, std::string &ret);</span><br>
-<span class="ifc">ssize_t read(SSL* s, std::string &ret,char r[65536]);</span><br>
+<span class="ifc">ssize_t read(SSL* s, std::string &ret, char* r, size_t len);</span><br>
+<span class="ifc">ssize_t read(SSL* s, std::string &ret, char r[65536]);</span><br>
 <span class="ifc">ssize_t read(SSL* s, char* ret, size_t len);</span><br><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reads in ret buffer with timeout=0 from the SSL structure and returns the number of read bytes.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If SSL structure is corrupted the function returns -1. 
@@ -1500,6 +1503,99 @@ To write log use the following macroses (zLog.h):<br><br>
 <hr width=100% color= #000000 align="center">
 <div  class="doctext">
 <span class="ifc">virtual ~zPool();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes all objects in the pool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual T* create()= 0;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a new object and returns a pointer to it or NULL.
+ The function is called when all objects in the pool are used.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void destroy();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes all objects in the pool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable std::list&lt;T*&gt; mtp_storage;</span><br>
+<span class="ifc">mutable std::set&lt;T*&gt; mtp_value;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The lists of stored objects and used objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual T* get();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns a pointer to new object or NULL.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool push(T* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Moves the used object to the storage.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool drop(T* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes object p.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool check(T* p, bool inuse=true) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if object p is found in pool, false otherwise.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is true, function tries to find in the list of used objects.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is false, function tries to find in the list of stored objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void clear();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes all stored objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual size_t count(bool inuse=true) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is true, function returns the number of used objects.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is false, function returns the number of stored objects.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_SynchPool"></a>
+<center><span class="caption">template&lt; class T &gt; class zSynchPool</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zSynchPool class is object pool container.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zSynchPool is thread safe.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zSynchPool are defined in zPool.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zSynchPool();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates pool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual ~zSynchPool();</span><br><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes all objects in the pool.
 <br><br>
 </div>

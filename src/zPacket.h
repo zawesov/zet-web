@@ -1268,7 +1268,8 @@ virtual void run();
 
 mutable std::map<int, zPacketThread::zSockSerVal> sock_serv;
 
-mutable char m_crd[65536];
+//mutable char m_crd[65536];
+mutable char* m_crd;
 mutable zRandomGenerator m_rnd;
 
 private:

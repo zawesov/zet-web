@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "zPacket.h"
 
 #define ZMAX_PACKET_POOL 100000
+#define ZTHREAD_PACKET_BUF_SIZE 65536
 
 #define PARSE_BLANK(p, len, pos)\
 {\
@@ -1115,6 +1116,7 @@ zPacketThread::zPacketThread(int s, const zPacketThread::zPTParam& proto):
  tcp_client_pool(),
  ws_client_pool(),
  http_client_pool(),
+ m_crd(new char[ZTHREAD_PACKET_BUF_SIZE]),
  m_rnd((unsigned)(::time(NULL)+((size_t) this)))
 {
  parent=this;
@@ -1139,6 +1141,7 @@ zPacketThread::zPacketThread(const std::map<int, zPacketThread::zPTParam>& s):
  tcp_client_pool(),
  ws_client_pool(),
  http_client_pool(),
+ m_crd(new char[ZTHREAD_PACKET_BUF_SIZE]),
  m_rnd((unsigned)(::time(NULL)+((size_t) this)))
 {
  parent=this;
@@ -1162,6 +1165,7 @@ zPacketThread::~zPacketThread()
  clear_event();
  clear();
  sock=-1;
+ if(m_crd) { delete[] m_crd; m_crd=NULL; }
 };
 
 void zPacketThread::execute(int s, short what)
@@ -1403,9 +1407,9 @@ void zPacketThread::exec_read(zPacketHTTP* p)
    onAccept(p);
    return;
   }
-  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd);
+  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE);
  }
- else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd); }
+ else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE); }
  if(n < 0) { onClose(p); p->push(); return; }
  if(n == 0) { /*LOG_PRINT_DEBUG("System", "zPacketThread::exec_read: HTTP::read 0 bytes?\n");*/ return; }
 // onRead(p);
@@ -1455,9 +1459,9 @@ void zPacketThread::exec_read(zPacketWS* p)
    onAccept(p);
    return;
   }
-  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd);
+  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE);
  }
- else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd); }
+ else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE); }
  if(n < 0) { onClose(p); p->push(); return; }
  if(n == 0) { /*LOG_PRINT_DEBUG("System", "zPacketThread::exec_read: WS::read 0 bytes?\n");*/ return; }
  n= zPacketWS::parse(p);
@@ -1499,9 +1503,9 @@ void zPacketThread::exec_read(zPacketTCP* p)
    onAccept(p);
    return;
   }
-  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd);
+  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE);
  }
- else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd); }
+ else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE); }
  if(n < 0) { onClose(p); p->push(); return; }
  if(n == 0) { /*LOG_PRINT_DEBUG("System", "zPacketThread::exec_read: TCP::read 0 bytes?\n");*/ return; }
  onRead(p);
@@ -1539,9 +1543,9 @@ void zPacketThread::exec_read(zClientTCP* p)
    onOpen(p);
    return;
   }
-  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd);
+  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE);
  }
- else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd); }
+ else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE); }
  if(n < 0) { onClose(p); p->push(); return; }
  if(n == 0) { /*LOG_PRINT_DEBUG("System", "zPacketThread::exec_read: ClientTCP::read 0 bytes?\n");*/ return; }
  onRead(p);
@@ -1579,9 +1583,9 @@ void zPacketThread::exec_read(zClientWS* p)
 //   onAccept(p);
    return;
   }
-  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd);
+  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE);
  }
- else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd); }
+ else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE); }
  if(n < 0) { onClose(p); p->push(); return; }
  if(n == 0) { /*LOG_PRINT_DEBUG("System", "zPacketThread::exec_read: ClientWS::read 0 bytes?\n");*/ return; }
  n= zClientWS::parse(p);
@@ -1622,9 +1626,9 @@ void zPacketThread::exec_read(zClientHTTP* p)
    onOpen(p);
    return;
   }
-  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd);
+  n= ZNSOCKET::read(p->ssl, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE);
  }
- else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd); }
+ else { n=ZNSOCKET::read(p->sock, p->str_in, m_crd, ZTHREAD_PACKET_BUF_SIZE); }
  if(n < 0) { onClose(p); p->push(); return; }
  if(n == 0) { /*LOG_PRINT_DEBUG("System", "zPacketThread::exec_read: HTTP::read 0 bytes?\n");*/ return; }
 // onRead(p);

@@ -48,7 +48,7 @@ protected:
 // virtual T* create() const { return new T(); };
  virtual T* create()= 0;
 /*
- Ñreates a new object and returns a pointer to it or NULL.
+ Creates a new object and returns a pointer to it or NULL. 
  The function is called when all objects in the pool are used.
 */
  virtual void destroy();
@@ -145,7 +145,6 @@ mutable std::set<T*> mtp_value;
 */
 };
 
-
 template<class T> void zPool<T>::destroy()
 {
  for(typename std::list<T*>::iterator k= mtp_storage.begin(); k != mtp_storage.end(); ++k) { delete *k; }
@@ -159,6 +158,76 @@ template<class T> void zPool<T>::clear()
 {
  for(typename std::list<T*>::iterator k= mtp_storage.begin(); k != mtp_storage.end(); ++k) { delete *k; }
  mtp_storage.clear();
+};
+
+template<class T> class zSynchPool: public zPool<T>
+{
+
+private:
+
+ ZCED(zSynchPool)
+
+protected:
+
+// virtual T* create() const { return new T(); };
+// virtual T* create()= 0;
+/*
+ 
+ The function is called when all objects in the pool are used.
+*/
+ virtual void destroy() { zMutexLock m(&mtp_mut); return zPool<T>::destroy(); };
+/*
+ Deletes all objects in the pool.
+*/
+
+public:
+
+mutable zMutex mtp_mut;
+
+ zSynchPool(): mtp_mut() {};
+/*
+ Creates pool.
+*/
+
+ virtual ~zSynchPool() { return; };
+/*
+ Deletes all objects in the pool.
+*/
+
+ virtual T* get() { zMutexLock m(&mtp_mut); return zPool<T>::get(); };
+/*
+ Returns new pointer to new object or NULL.
+*/
+
+ virtual bool push(T* p) { zMutexLock m(&mtp_mut); return zPool<T>::push(p); };
+/*
+ Moves the used object to the storage.
+ If success returns true, false otherwise.
+*/
+
+ virtual bool drop(T* p) { zMutexLock m(&mtp_mut); return zPool<T>::drop(p); };
+/*
+ Deletes object p.
+ If success returns true, false otherwise.
+*/
+
+ virtual bool check(T* p, bool inuse=true) const { zMutexLock m(&mtp_mut); return zPool<T>::check(p, inuse); };
+/*
+  Returns true if object p is found in pool, false otherwise.
+  If inuse is true, function tries to find in the list of used objects.
+  If inuse is false, function tries to find in the list of stored objects.
+*/
+
+ virtual void clear() { zMutexLock m(&mtp_mut); return zPool<T>::clear(); };
+/*
+ Deletes all stored objects.
+*/
+
+ virtual size_t count(bool inuse=true) const { zMutexLock m(&mtp_mut); return zPool<T>::count(inuse); };
+/*
+  If inuse is true, function returns the number of used objects.
+  If inuse is false, function returns the number of stored objects.
+*/
 };
 
 template<class T> class zChronoPool

@@ -87,6 +87,7 @@ namespace ZNSOCKET
  Listens to s server socket with timeout tm or less to return socket is defined blocking parameter.
 */
  ssize_t read(int s, std::string &ret);// read
+ ssize_t read(int s, std::string &ret, char* r, size_t len);// read
  ssize_t read(int s, std::string &ret, char r[65536]);// read
  ssize_t read(int s, char* ret, size_t len);// read
 /*
@@ -175,6 +176,7 @@ namespace ZNSOCKET
  If function returns 1 then the TLS/SSL handshake was successfully completed, a TLS/SSL connection has been established.
 */
  ssize_t read(SSL* s, std::string &ret);// read
+ ssize_t read(SSL* s, std::string &ret,char* r, size_t len);// read
  ssize_t read(SSL* s, std::string &ret,char r[65536]);// read
  ssize_t read(SSL* s, char* ret, size_t len);// read
 /*
