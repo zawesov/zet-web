@@ -4,7 +4,7 @@ CC=g++
 
 INC = zetweb_3.4
 
-CFLAGS= -g -static -Werror -Wno-reorder -I $(PREFIX)/include/$(INC)
+CFLAGS= -g -Wno-reorder -I $(PREFIX)/include/$(INC)
 LDPATH= 
 LIBPATH = -L /usr/local/lib
 LIBS= -lzetweb_3.4 -lcrypto -lssl -levent -ldl -lpthread

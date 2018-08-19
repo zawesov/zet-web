@@ -4,7 +4,7 @@ CC=mingw32-g++
 
 INC = zetweb_3.4
 
-CFLAGS= -g -Werror -Wno-reorder -I $(PREFIX)/include/$(INC)
+CFLAGS= -g -Wno-reorder -I $(PREFIX)/include/$(INC)
 LDPATH= 
 LIBPATH =
 LIBS= -lwsock32 -levent -lssl -lcrypto -lzetweb_3.4

@@ -8,7 +8,7 @@ EXAMPLE= ./example
 RES_LIB=libzetweb_3.4.a
 RES_INC=zetweb_3.4
 
-CFLAGS= -g -static -Werror -Wno-reorder -I $(SRC)
+CFLAGS= -g -static -Wno-reorder -I $(SRC)
 LDPATH= 
 LIBPATH = -L /usr/local/lib
 LIBS= -lpthread -ldl -levent -lssl -lcrypto

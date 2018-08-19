@@ -9,7 +9,7 @@ RES_LIB=libzetweb_3.4.a
 RES_INC=zetweb_3.4
 
 #-std=c++11 -Doff64_t=_off64_t -U__STRICT_ANSI__
-CFLAGS= -g -Werror -Wno-reorder -I $(SRC)
+CFLAGS= -g -static -Wno-reorder -I $(SRC)
 LDPATH= 
 LIBPATH =
 LIBS= -lwsock32 -levent -lssl -lcrypto
