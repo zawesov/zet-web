@@ -105,6 +105,7 @@ virtual void Update();
  std::map<std::string, zDNS::zDNSValue>* m_value;
  std::map<std::string, zDNS::zDNSValue>* m_storage;
  mutable zRWMutex m_mut;
+ mutable zMutex m_im;
 
 private:
   zDNS(const zDNS &);

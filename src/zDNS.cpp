@@ -10,7 +10,8 @@ zDNS::zDNS():
  m_last(::time(NULL)),
  m_value(new std::map<std::string, zDNS::zDNSValue>()),
  m_storage(new std::map<std::string, zDNS::zDNSValue>()),
- m_mut()
+ m_mut(),
+ m_im()
 {};
 
 zDNS::~zDNS()
@@ -28,6 +29,7 @@ std::string zDNS::Host(const std::string &addr)
   std::map<std::string, zDNS::zDNSValue>::const_iterator k= m_value->find(adr);
   if(k != m_value->end() && !(k->second.value.empty()))
   {
+   zMutexLock mi(&m_im);
    if(k->second.index < k->second.value.size()) return k->second.value[k->second.index++];
    k->second.index=0;
    return k->second.value[k->second.index];
@@ -124,9 +126,11 @@ void zDNS::Update()
  m_last= ::time(NULL);
 
  {
+  m_storage->clear();
   zRWMutexLock m(&m_mut, false);
-  (*m_storage)= (*m_value);
+  for(std::map<std::string, zDNS::zDNSValue>::const_iterator k= m_value->begin(); k != m_value->end(); ++k) { (*m_storage)[k->first]; }
  }
+
  std::list<std::string> rl;
  for(std::map<std::string, zDNS::zDNSValue>::iterator k= m_storage->begin(); k != m_storage->end(); ++k)
  {
