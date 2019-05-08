@@ -118,13 +118,11 @@ bool ZNDIR::roll(std::vector<std::string>& ret, const std::string &path)
 #if defined(__GNUG__) || defined(__CYGWIN__) || defined(__linux__)
  DIR *fd = ::opendir(ZNSTR::trim(path).c_str());
  if(!fd) return false;
- struct dirent entry;
- struct dirent *result;
  std::string name, fullname;
- for(int return_code = readdir_r(fd, &entry, &result); result != NULL && return_code == 0; return_code = readdir_r(fd, &entry, &result))
+ for(struct dirent *result = readdir(fd); result; result = readdir(fd))
  {
-  name = entry.d_name;
-  if(!name.empty() && name[0] == '.') continue;
+  name = result->d_name;
+  if(name.empty() || name[0] == '.') continue;
   fullname = (ZNSTR::trim(path)+std::string(ZNSTR::path_delimiter)+name);
   struct stat statbuf;
   if(::stat(fullname.c_str(),&statbuf) != 0 ) continue;
@@ -202,11 +200,11 @@ bool ZNFILE::roll(std::vector<std::string>& ret, const std::string &path)
  HANDLE fd = FindFirstFile((ZNSTR::trim(path)+std::string(ZNSTR::path_delimiter)+'*').c_str(), &result);
  if(fd == INVALID_HANDLE_VALUE) return false;
  std::string name=result.cFileName;
- if(!(result.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && !name.empty() && name[0] != '.' ) { ret.push_back(result.cFileName); }
+ if(!(result.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && !name.empty()) { ret.push_back(result.cFileName); }
  for(;FindNextFile(fd, &result) != 0;)
  {
   name=result.cFileName;
-  if(!(result.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && !name.empty() && name[0] != '.' ) { ret.push_back(result.cFileName); }
+  if(!(result.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && !name.empty()) { ret.push_back(result.cFileName); }
  }
  FindClose(fd);
 /*
@@ -224,13 +222,11 @@ bool ZNFILE::roll(std::vector<std::string>& ret, const std::string &path)
 #if defined(__GNUG__) || defined(__CYGWIN__) || defined(__linux__)
  DIR *fd = ::opendir(ZNSTR::trim(path).c_str());
  if(!fd) return false;
- struct dirent entry;
- struct dirent *result;
  std::string name, fullname;
- for(int return_code = readdir_r(fd, &entry, &result); result != NULL && return_code == 0; return_code = readdir_r(fd, &entry, &result))
+ for(struct dirent *result = readdir(fd); result; result = readdir(fd))
  {
-  name = entry.d_name;
-  if(!name.empty() && name[0] == '.' ) continue;
+  name = result->d_name;
+  if(name.empty() || name[0] == '.' ) continue;
   fullname =(ZNSTR::trim(path)+std::string(ZNSTR::path_delimiter)+name);
   struct stat statbuf;
   if(stat(fullname.c_str(),&statbuf) != 0) continue;

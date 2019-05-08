@@ -42,9 +42,12 @@ static void setPeriod(time_t period) { zDNS::dns.m_period= period; };
  ZDNS_PERIOD is default period (in seconds) of updating.
 */
 static std::string host(const std::string &adr) { return zDNS::dns.Host(adr); };
+static std::string host6(const std::string &adr) { return zDNS::dns.Host6(adr); };
 static size_t host(std::vector<std::string>& ret, const std::string &adr) { return zDNS::dns.Host(ret, adr); };
+static size_t host6(std::vector<std::string>& ret, const std::string &adr) { return zDNS::dns.Host6(ret, adr); };
 /*
  Retrieves host information corresponding to a host name or ip address from a host database.
+ host - ipv4, host6 - ipv6.
 */
 static bool erase(const std::string &addr) { return zDNS::dns.Erase(addr); };
 /*
@@ -55,8 +58,10 @@ static void clear() { return zDNS::dns.Clear(); };
  Clears host database.
 */
 static bool check(const std::string &addr) { return zDNS::dns.Check(addr); };
+static bool check6(const std::string &addr) { return zDNS::dns.Check6(addr); };
 /*
  Returns true if host addr is found in host database, false otherwise.
+ check - ipv4, check6 - ipv6.
 */
 static size_t size() { return zDNS::dns.Size(); };
 /*
@@ -79,10 +84,12 @@ static zDNS dns;
  class zDNSValue
  {
   public:
-  zDNSValue(): index(0), value() { };
+  zDNSValue(): index(0), index6(0), value(), value6() { };
 
   mutable size_t index;
+  mutable size_t index6;
   mutable std::vector<std::string> value;
+  mutable std::vector<std::string> value6;
 
  };
 
@@ -91,10 +98,13 @@ static zDNS dns;
 virtual ~zDNS();
 
 virtual std::string Host(const std::string &addr);
+virtual std::string Host6(const std::string &addr);
 virtual size_t Host(std::vector<std::string>& ret, const std::string &addr);
+virtual size_t Host6(std::vector<std::string>& ret, const std::string &addr);
 virtual bool Erase(const std::string &addr);
 virtual void Clear();
 virtual bool Check(const std::string &addr) const;
+virtual bool Check6(const std::string &addr) const;
 virtual size_t Size();
 virtual void GetValue(std::set<std::string>& ret) const;
 virtual void Update();

@@ -6,8 +6,7 @@
 
 <script  language='javascript'>
 
-// var ws = new WebSocket("wss://127.0.0.1:11236/proxy");
- var ws = new WebSocket("wss://localhost:11236/proxy");
+ var ws = new WebSocket("wss://[::1]:11236/proxy");
  ws.onopen = function() { alert("Socket is open!"); };
 			
  ws.onclose = function() { alert("Connection is closed!"); };

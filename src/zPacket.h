@@ -141,6 +141,11 @@ virtual bool check(bool inuse=true)
   If inuse is false, function tries to find in the list of stored objects.
 */
 
+virtual int family() const { return ZNSOCKET::family(sock); };
+/*
+ Returns the family of the socket (AF_INET or AF_INET6).
+*/
+
 mutable zPool<zPacket>* pool;
 /*
   Pool for zPacket objects.
@@ -1210,31 +1215,39 @@ virtual void onClose(zClientTCP* p) { return; };
 */
 
 virtual zClientTCP* connectTCP(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);
+virtual zClientTCP* connectTCP6(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);
 /*
  Tries to set connection to adr:port.
  If cctx is not NULL the encrypted connection is established.
  If connection has been established then onOpen(zClientTCP* p) is called.
  If connection has been failed then onClose(zClientTCP* p) is called.
+ connectTCP - ipv4, connectTCP6 - ipv6.
 */
 virtual zClientWS* connectWS(const std::string& adr,unsigned short port, const std::string& path="/", const std::string& version="13", SSL_CTX* cctx=NULL, const std::map<std::string, std::string>& add_header=std::map<std::string, std::string>());
+virtual zClientWS* connectWS6(const std::string& adr,unsigned short port, const std::string& path="/", const std::string& version="13", SSL_CTX* cctx=NULL, const std::map<std::string, std::string>& add_header=std::map<std::string, std::string>());
 /*
  Tries to set connection to adr:port.
  If cctx is not NULL the encrypted connection is established.
  path - http path, version - ws version, add_header - additional header lines for request.
  If connection has been established then onOpen(zClientWS* p) is called.
  If connection has been failed then onClose(zClientWS* p) is called.
+ connectWS - ipv4, connectWS6 - ipv6.
 */
 virtual zClientHTTP* connectHTTP(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);
+virtual zClientHTTP* connectHTTP6(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);
 /*
  Tries to set connection to adr:port.
  If cctx is not NULL the encrypted connection is established.
  If connection has been established then onOpen(zClientHTTP* p) is called.
  If connection has been failed then onClose(zClientHTTP* p) is called.
+ connectHTTP - ipv4, connectHTTP6 - ipv6.
 */
 virtual zClientHTTP* getClientHTTP(const std::string& adr,unsigned short port);
+virtual zClientHTTP* getClientHTTP6(const std::string& adr,unsigned short port);
 /*
  Returns already established connections that have been stored as keep_alive.
  If such connections were not found then NULL is returned.
+ getClientHTTP - ipv4, getClientHTTP6 - ipv6.
 */
 
 mutable event_base* ev_base;

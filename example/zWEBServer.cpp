@@ -23,11 +23,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "zWEBThread.h"
 
 #define DNS_PERIOD 60
-#define THREAD_NUMBER 3
+#define THREAD_NUMBER 1
 #define HTTP_HOST "127.0.0.1"
 #define HTTPS_HOST "127.0.0.1"
 #define WS_HOST "127.0.0.1"
 #define WSS_HOST "127.0.0.1"
+#define HTTP_HOST6 "::1"
+#define HTTPS_HOST6 "::1"
+#define WS_HOST6 "::1"
+#define WSS_HOST6 "::1"
 #define HTTP_PORT 12358
 #define HTTPS_PORT 12359
 #define WS_PORT 11235
@@ -75,18 +79,16 @@ int main(/* int argc,const char **argv */)
  }
 
 /*
+ Log mode is DEBUG.
+*/
+ zLog::Log.m_level= ZLOG_DEBUG;
+/*
  zLog::Log.m_level= ZLOG_INFO;
  zLog::Log.m_level= ZLOG_WARN;
  zLog::Log.m_level= ZLOG_ERROR;
  zLog::Log.m_level= ZLOG_DEBUG;
 */
 
-// std::cout << "OPENSSL_VERSION_NUMBER=" << OPENSSL_VERSION_NUMBER << std::endl;
-
-/*
- Log mode is DEBUG.
-*/
- zLog::Log.m_level= ZLOG_DEBUG;
 /*
  Period of updating the list of domain names and ip addresses. 
 */
@@ -120,6 +122,19 @@ int main(/* int argc,const char **argv */)
    std::cout << "HTTP Server socket: " << HTTP_HOST << ":" << HTTP_PORT << std::endl;
    LOG_PRINT_INFO("main", "HTTP Server socket: " HTTP_HOST ":"+ZNSTR::toString(HTTP_PORT));
   }
+
+  s= ZNSOCKET::server6(HTTP_HOST6, HTTP_PORT, BACK_LOG);
+  if(s < 0)
+  {
+   std::cout << "Can't open socket: " << HTTP_HOST6 << ":" << HTTP_PORT << std::endl;
+   LOG_PRINT_INFO("main", "Can't open socket: " HTTP_HOST6 ":"+ZNSTR::toString(HTTP_PORT));
+  }
+  else
+  {
+   servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_HTTP);
+   std::cout << "HTTP6 Server socket: " << HTTP_HOST6 << ":" << HTTP_PORT << std::endl;
+   LOG_PRINT_INFO("main", "HTTP6 Server socket: " HTTP_HOST6 ":"+ZNSTR::toString(HTTP_PORT));
+  }
  
   s= ZNSOCKET::server(WS_HOST, WS_PORT, BACK_LOG);
   if(s < 0)
@@ -134,6 +149,18 @@ int main(/* int argc,const char **argv */)
    LOG_PRINT_INFO("main", "WS Server socket: " WS_HOST ":"+ZNSTR::toString(WS_PORT));
   }
 
+  s= ZNSOCKET::server6(WS_HOST6, WS_PORT, BACK_LOG);
+  if(s < 0)
+  {
+   std::cout << "Can't open socket: " << WS_HOST6 << ":" << WS_PORT << std::endl;
+   LOG_PRINT_INFO("main", "Can't open socket: " WS_HOST6 ":"+ZNSTR::toString(WS_PORT));
+  }
+  else
+  {
+   servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_WS);
+   std::cout << "WS6 Server socket: " << WS_HOST6 << ":" << WS_PORT << std::endl;
+   LOG_PRINT_INFO("main", "WS6 Server socket: " WS_HOST6 ":"+ZNSTR::toString(WS_PORT));
+  }
 /*
  Creating a server socket and SSL_CTX structures on server side.
 */ 
@@ -162,6 +189,32 @@ int main(/* int argc,const char **argv */)
     LOG_PRINT_INFO("main", "HTTPS Server socket: " HTTPS_HOST ":"+ZNSTR::toString(HTTPS_PORT)+"; " HTTPS_CRT " : " HTTPS_KEY);
    }
   }
+
+  s= ZNSOCKET::server6(HTTPS_HOST6, HTTPS_PORT, BACK_LOG);
+  if(s < 0)
+  {
+   std::cout << "Can't open socket: " << HTTPS_HOST6 << ":" << HTTPS_PORT << std::endl;
+   LOG_PRINT_INFO("main", "Can't open socket: " HTTPS_HOST6 ":"+ZNSTR::toString(HTTPS_PORT));
+  }
+  else
+  {
+   SSL_CTX* ctx= ZNSOCKET::server_ctx(HTTPS_CRT, HTTPS_KEY);
+   if(ctx == NULL)
+   {
+    std::cout << "Can't create SSL_CTX: " << HTTPS_HOST6 << ":" << HTTPS_PORT << "; " << HTTPS_CRT << " : " << HTTPS_KEY << std::endl;
+    LOG_PRINT_INFO("main", "Can't open socket: " HTTPS_HOST6 ":"+ZNSTR::toString(HTTPS_PORT)+"; " HTTPS_CRT " : " HTTPS_KEY);
+   }
+   else
+   {
+/*
+ Choose list of available SSL_CIPHERs.
+*/
+    SSL_CTX_set_cipher_list(ctx, "ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM");
+    servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_HTTP, ctx);
+    std::cout << "HTTPS Server socket: " << HTTPS_HOST6 << ":" << HTTPS_PORT << "; " << HTTPS_CRT << " : " << HTTPS_KEY << std::endl;
+    LOG_PRINT_INFO("main", "HTTPS6 Server socket: " HTTPS_HOST6 ":"+ZNSTR::toString(HTTPS_PORT)+"; " HTTPS_CRT " : " HTTPS_KEY);
+   }
+  }
  
   s= ZNSOCKET::server(WSS_HOST, WSS_PORT, BACK_LOG);
   if(s < 0)
@@ -185,6 +238,30 @@ int main(/* int argc,const char **argv */)
     LOG_PRINT_INFO("main", "WSS Server socket: " WSS_HOST ":"+ZNSTR::toString(WSS_PORT)+"; " WSS_CRT " : " HTTPS_KEY);
    }
   }
+
+  s= ZNSOCKET::server6(WSS_HOST6, WSS_PORT, BACK_LOG);
+  if(s < 0)
+  {
+   std::cout << "Can't open socket: " << WSS_HOST6 << ":" << WSS_PORT << std::endl;
+   LOG_PRINT_INFO("main", "Can't open socket: " WSS_HOST6 ":"+ZNSTR::toString(WSS_PORT));
+  }
+  else
+  {
+   SSL_CTX* ctx= ZNSOCKET::server_ctx(WSS_CRT, WSS_KEY);
+   if(ctx == NULL)
+   {
+    std::cout << "Can't create SSL_CTX: " << WSS_HOST6 << ":" << WSS_PORT << "; " << WSS_CRT << " : " << WSS_KEY << std::endl;
+    LOG_PRINT_INFO("main", "Can't open socket: " WSS_HOST6 ":"+ZNSTR::toString(WSS_PORT)+"; " WSS_CRT " : " WSS_KEY);
+   }
+   else
+   {
+    SSL_CTX_set_cipher_list(ctx, "ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM");
+    servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_WS, ctx);
+    std::cout << "WSS6 Server socket: " << WSS_HOST6 << ":" << WSS_PORT << "; " << WSS_CRT << " : " << WSS_KEY << std::endl;
+    LOG_PRINT_INFO("main", "WSS6 Server socket: " WSS_HOST6 ":"+ZNSTR::toString(WSS_PORT)+"; " WSS_CRT " : " HTTPS_KEY);
+   }
+  }
+
  }
 
 /*

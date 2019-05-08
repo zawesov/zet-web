@@ -2,12 +2,12 @@ PREFIX ?= /usr/local
 
 CC=g++
 
-INC = zetweb_3.4
+INC = zetweb_3.6
 
 CFLAGS= -g -Wno-reorder -I $(PREFIX)/include/$(INC)
 LDPATH= 
 LIBPATH = -L /usr/local/lib
-LIBS= -lzetweb_3.4 -lcrypto -lssl -levent -ldl -lpthread
+LIBS= -lzetweb_3.6 -lcrypto -lssl -levent -ldl -lpthread
 LIBNAME=
 #TLOPT=/C /P64
 

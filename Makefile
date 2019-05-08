@@ -5,8 +5,8 @@ CC=g++
 BUILD = ./build
 SRC = ./src
 EXAMPLE= ./example
-RES_LIB=libzetweb_3.4.a
-RES_INC=zetweb_3.4
+RES_LIB=libzetweb_3.6.a
+RES_INC=zetweb_3.6
 
 CFLAGS= -g -static -Wno-reorder -I $(SRC)
 LDPATH= 

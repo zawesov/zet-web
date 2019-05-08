@@ -41,23 +41,36 @@ namespace ZNSOCKET
  Sleeps timeout microseconds.
 */
  std::string host(const std::string &addr);
+ std::string host6(const std::string &addr);
  size_t host(std::vector<std::string>& ret, const std::string &addr);
+ size_t host6(std::vector<std::string>& ret, const std::string &addr);
  size_t host(std::list<std::string>& ret, const std::string &addr);
+ size_t host6(std::list<std::string>& ret, const std::string &addr);
+ size_t resolve(std::vector<std::string>& ret4, std::vector<std::string>& ret6, const std::string &addr);
+ size_t resolve(std::list<std::string>& ret4, std::list<std::string>& ret6, const std::string &addr);
+/*
+ Retrieves host information corresponding to a host name or ip address from a host database.
+ host - ipv4, host6 - ipv6.
+*/
  std::string iptoString(unsigned addr);
  unsigned strtoIp(const std::string &addr);
 /*
  Get IP address corresponding by hostname, that is string addr.
 */
  int socket(const std::string& adr,unsigned short port, bool blocking=false, unsigned timeout=6000);
+ int socket6(const std::string& adr,unsigned short port, bool blocking=false, unsigned timeout=6000);
 /*
  Creates a stream socket and connects its to the specified port number at the specified address.
  If error function returns -1;
+ socket - ipv4, socket6 - ipv6.
 */
  int async_socket(const std::string& adr,unsigned short port);
+ int async_socket6(const std::string& adr,unsigned short port);
 /*
  Creates a non_blocking stream socket and try to connect its to the specified port number at the specified address.
  Check the result of connect by the function async_select(int s);
  If error function returns -1;
+ async_socket - ipv4, async_socket6 - ipv6.
 */
  int async_select(int s, unsigned timeout=0);
 /*
@@ -65,13 +78,18 @@ namespace ZNSOCKET
  Return: -1 - connection fault, 0 - in_progress, 1 - success.
 */
  int server(const std::string& adr,unsigned short port, int backlog=1024, bool blocking=false);
+ int server6(const std::string& adr,unsigned short port, int backlog=1024, bool blocking=false);
 /*
  Creates a server socket with the specified port, listen backlog, and local IP address to bind to.
  If error function returns -1;
+ server - ipv4, server6 - ipv6.
 */
  int server(unsigned short port, int backlog=1024, bool blocking=false);
+ int server6(unsigned short port, int backlog=1024, bool blocking=false);
 /*
  Creates a server socket and binds it to the specified local port number, with the specified backlog.
+ If error function returns -1;
+ server - ipv4, server6 - ipv6.
 */
  bool alive(int s);
 /*
@@ -106,6 +124,10 @@ namespace ZNSOCKET
  Writes string v starting pos to the socket.
  Returns the number of written bytes when string v have been sent wholly. 
  If the socket is corrupted the function returns -1. 
+*/
+ int family(int s);//family
+/*
+ Returns the family of the socket (AF_INET or AF_INET6).
 */
  std::string getAddress(int s);// getAddress
 /*
@@ -213,13 +235,29 @@ namespace ZNUDP
  std::string net_to_host(unsigned n);
  unsigned host_to_net(const std::string& src);
 
+ std::string host(const std::string &addr);
+ std::string host6(const std::string &addr);
+ size_t host(std::vector<std::string>& ret, const std::string &addr);
+ size_t host6(std::vector<std::string>& ret, const std::string &addr);
+ size_t host(std::list<std::string>& ret, const std::string &addr);
+ size_t host6(std::list<std::string>& ret, const std::string &addr);
+ size_t resolve(std::vector<std::string>& ret4, std::vector<std::string>& ret6, const std::string &addr);
+ size_t resolve(std::list<std::string>& ret4, std::list<std::string>& ret6, const std::string &addr);
+/*
+ Retrieves host information corresponding to a host name or ip address from a host database.
+ host - ipv4, host6 - ipv6.
+*/
  int socket(const std::string& adr,unsigned short port, bool blocking=false);
+ int socket6(const std::string& adr,unsigned short port, bool blocking=false);
 /*
  Creates a udp socket and connects it to the specified port at the specified address in blocking mode.
+ socket - ipv4, socket6 - ipv6.
 */
  int server(const std::string& adr,unsigned short port, bool blocking=false);
+ int server6(const std::string& adr,unsigned short port, bool blocking=false);
 /*
  Creates a server socket with the specified port, local IP address and blocking mode to bind to.
+ server - ipv4, server6 - ipv6.
 */
  bool alive(int s);
 /*
@@ -232,20 +270,32 @@ namespace ZNUDP
  ssize_t read(int s, unsigned& adr, unsigned short& port, std::string &value);// read
  ssize_t read(int s, unsigned& adr, unsigned short& port, std::string &ret, char rv[65536]);
  ssize_t read(int s, unsigned& adr, unsigned short& port, char* ret, size_t len);
+ ssize_t read6(int s, struct in6_addr& adr, unsigned short& port, std::string &value);// read6
+ ssize_t read6(int s, struct in6_addr& adr, unsigned short& port, std::string &ret, char rv[65536]);
+ ssize_t read6(int s, struct in6_addr& adr, unsigned short& port, char* ret, size_t len);
+
 /*
  Reads with timeout=0  from the socket. If socket is corrupted the function returns -1. 
+ read - ipv4, read6 - ipv6.
 */
  ssize_t write(int s, unsigned adr,unsigned short port, const std::string &v, size_t pos=0);// write
- ssize_t pass(int s, unsigned adr,unsigned short port, const char* v, size_t len);
+ ssize_t pass(int s, unsigned adr,unsigned short port, const char* v, size_t len);// pass
+ ssize_t write6(int s, const struct in6_addr& adr,unsigned short port, const std::string &v, size_t pos=0);// write6
+ ssize_t pass6(int s, const struct in6_addr& adr,unsigned short port, const char* v, size_t len);// pass6
 /*
  Writes with timeout=0 string v starting pos to the socket. 
  If the socket is corrupted the function returns -1. 
+ write, pass - ipv4, write6, pass6 - ipv6.
 */
  ssize_t write(int s, const std::string &v, size_t pos=0);// write
  ssize_t pass(int s, const char* v, size_t len);
 /*
  Writes with timeout=0 string v starting pos to the socket. 
  If the socket is corrupted the function returns -1. 
+*/
+ int family(int s);// family
+/*
+ Returns the family of the socket (AF_INET or AF_INET6).
 */
  std::string getAddress(int s);// getAddress
 /*

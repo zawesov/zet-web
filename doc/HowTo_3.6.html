@@ -1,0 +1,1012 @@
+<!DOCTYPE HTML PUBLIC '-//IETF//DTD HTML//EN'>
+<HTML>
+<HEAD>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+<TITLE>ZET-WEB HOW TO</TITLE>
+
+<style>
+ .contents { font-size: 20; font-style: italic; font-weight: bold; color: #008080 }
+ .doctext  { text-align: justify; margin-left: 10; font-size: 18; font-style: normal; font-weight: normal; color: #000000 }
+ .docpre  { text-align: justify; margin-left: 10; white-space: pre; font-size: 18; font-style: normal; font-weight: normal; color: #000000 }
+ .cmnt  { text-align: justify; margin-left: 10; white-space: pre; font-size: 18; font-style: italic; font-weight: normal; color: #0000FF }
+ .caption  { text-align: center; white-space: nowrap; font-size: 20; font-style: italic; font-weight: bold; color: #008080 }
+ .ifc  { text-align: center; margin-left: 10; white-space: nowrap; font-size: 20; font-style: italic; font-weight: bold; color: #000000 }
+</style>
+
+</HEAD>
+<BODY  bgcolor='#FFFFFF'>
+<br><br><br><center><span class="caption" style="color: #000000; font-size: 23">ZET-WEB 3.6. HOW TO</span></center><br><br><br>
+
+<ul>
+<li style="margin-left: 15"><a href="#p_Introduction"><span class="contents"> Introduction </span> </a></li>
+
+<li style="margin-left: 15"><a href="#p_Main_thread"><span class="contents"> Main thread </span> </a></li>
+
+<li style="margin-left: 15"><span class="contents"> Working thread </span></li>
+<li style="margin-left: 30"><a href="#p_Parameters_HTTP"><span class="contents"> Parameters of HTTP query </span> </a></li>
+<li style="margin-left: 30"><a href="#p_files_parts"><span class="contents"> Sending files in parts </span> </a></li>
+<li style="margin-left: 30"><a href="#p_Echo"><span class="contents"> Echo service for websocket </span> </a></li>
+<li style="margin-left: 30"><a href="#p_HTTP_Proxy"><span class="contents"> HTTP Proxy </span> </a></li>
+<li style="margin-left: 30"><a href="#p_WS_Proxy"><span class="contents"> WS Proxy </span> </a></li>
+
+<li style="margin-left: 15"><a href="#p_certificate"><span class="contents"> Checking of SSL certificate </span> </a></li>
+<li style="margin-left: 15"><a href="#p_Test"><span class="contents"> Test </span> </a></li>
+</ul>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Introduction"></a>
+<center><span class="caption">Introduction</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Using ZET-WEB library involves the creation of a main thread and working threads. The main
+ thread manages by working threads (start, stop) and can realize slow operations (logging, work with files and databases, etc).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The example (see /example/) shows all the input parameters of http(s),
+ ws(s) echo service for websocket, proxy services (REST Api) for http(s) and ws(s).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Main thread are defined in zWEBServer.cpp.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Working thread are defined in zWEBThread.h and zWEBThread.cpp.
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Main_thread"></a>
+<center><span class="caption">Main thread</span></center><br>
+<div  class="doctext">
+<span class="docpre">
+
+#define DNS_PERIOD 60
+#define THREAD_NUMBER 3
+#define HTTP_HOST "127.0.0.1"
+#define HTTPS_HOST "127.0.0.1"
+#define WS_HOST "127.0.0.1"
+#define WSS_HOST "127.0.0.1"
+#define HTTP_HOST6 "::1"
+#define HTTPS_HOST6 "::1"
+#define WS_HOST6 "::1"
+#define WSS_HOST6 "::1"
+#define HTTP_PORT 12358
+#define HTTPS_PORT 12359
+#define WS_PORT 11235
+#define WSS_PORT 11236
+#define BACK_LOG 128
+#define HTTPS_CRT "./localhost.crt"
+#define HTTPS_KEY "./localhost.key"
+#define WSS_CRT "./localhost.crt"
+#define WSS_KEY "./localhost.key"
+
+#define ROTATE_TIMEOUT 60
+</span>
+<span class="cmnt">
+/*
+ Log mode is DEBUG.
+*/</span>
+<span class="docpre">
+ zLog::Log.m_level= ZLOG_DEBUG;
+</span>
+<span class="cmnt">
+/*
+ Period of updating the list of domain names and ip addresses. 
+*/
+// zDNS::setPeriod(DNS_PERIOD);
+
+/*
+ Maximum size of http/ws header and body.
+*/</span>
+<span class="docpre">
+ zPacketHTTP::header_max_length=65536;
+ zPacketHTTP::packet_max_length=1048576;
+
+ zPacketWS::header_max_length=65536;
+ zPacketWS::packet_max_length=1048576;
+</span>
+<span class="cmnt">
+/*
+ Creating server sockets
+*/</span>
+<span class="docpre">
+ std::map&lt;int, zPacketThread::zPTParam&gt; servsocks;
+ {
+  int s= ZNSOCKET::server(HTTP_HOST, HTTP_PORT, BACK_LOG);
+  if(s < 0) { LOG_PRINT_INFO("main", "Can't open socket: " HTTP_HOST ":"+ZNSTR::toString(HTTP_PORT)); }
+  else
+  {
+   servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_HTTP);
+   LOG_PRINT_INFO("main", "HTTP Server socket: " HTTP_HOST ":"+ZNSTR::toString(HTTP_PORT));
+  }
+
+  s= ZNSOCKET::server6(HTTP_HOST6, HTTP_PORT, BACK_LOG);
+  if(s < 0) { LOG_PRINT_INFO("main", "Can't open socket: " HTTP_HOST6 ":"+ZNSTR::toString(HTTP_PORT)); }
+  else
+  {
+   servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_HTTP);
+   LOG_PRINT_INFO("main", "HTTP6 Server socket: " HTTP_HOST6 ":"+ZNSTR::toString(HTTP_PORT));
+  }
+ 
+  s= ZNSOCKET::server(WS_HOST, WS_PORT, BACK_LOG);
+  if(s < 0) { LOG_PRINT_INFO("main", "Can't open socket: " WS_HOST ":"+ZNSTR::toString(WS_PORT)); }
+  else
+  {
+   servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_WS);
+   LOG_PRINT_INFO("main", "WS Server socket: " WS_HOST ":"+ZNSTR::toString(WS_PORT));
+  }
+
+  s= ZNSOCKET::server6(WS_HOST6, WS_PORT, BACK_LOG);
+  if(s < 0) { LOG_PRINT_INFO("main", "Can't open socket: " WS_HOST6 ":"+ZNSTR::toString(WS_PORT)); }
+  else
+  {
+   servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_WS);
+   LOG_PRINT_INFO("main", "WS6 Server socket: " WS_HOST6 ":"+ZNSTR::toString(WS_PORT));
+  }
+</span>
+<span class="cmnt">
+/*
+ Creating server sockets and SSL_CTX structures on server side.
+*/</span>
+<span class="docpre">
+  s= ZNSOCKET::server(HTTPS_HOST, HTTPS_PORT, BACK_LOG);
+  if(s < 0) { LOG_PRINT_INFO("main", "Can't open socket: " HTTPS_HOST ":"+ZNSTR::toString(HTTPS_PORT)); }
+  else
+  {
+   SSL_CTX* ctx= ZNSOCKET::server_ctx(HTTPS_CRT, HTTPS_KEY);
+   if(ctx == NULL) { LOG_PRINT_INFO("main", "Can't open socket: " HTTPS_HOST ":"+ZNSTR::toString(HTTPS_PORT)+"; " HTTPS_CRT " : " HTTPS_KEY); }
+   else
+   {
+</span>
+<span class="cmnt">
+/*
+ Choose list of available SSL_CIPHERs.
+*/</span>
+<span class="docpre">
+    SSL_CTX_set_cipher_list(ctx, "ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM");
+    servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_HTTP, ctx);
+    LOG_PRINT_INFO("main", "HTTPS Server socket: " HTTPS_HOST ":"+ZNSTR::toString(HTTPS_PORT)+"; " HTTPS_CRT " : " HTTPS_KEY);
+   }
+  }
+
+  s= ZNSOCKET::server6(HTTPS_HOST6, HTTPS_PORT, BACK_LOG);
+  if(s < 0) { LOG_PRINT_INFO("main", "Can't open socket: " HTTPS_HOST6 ":"+ZNSTR::toString(HTTPS_PORT)); }
+  else
+  {
+   SSL_CTX* ctx= ZNSOCKET::server_ctx(HTTPS_CRT, HTTPS_KEY);
+   if(ctx == NULL) { LOG_PRINT_INFO("main", "Can't open socket: " HTTPS_HOST6 ":"+ZNSTR::toString(HTTPS_PORT)+"; " HTTPS_CRT " : " HTTPS_KEY); }
+   else
+   {
+</span>
+<span class="cmnt">
+/*
+ Choose list of available SSL_CIPHERs.
+*/</span>
+<span class="docpre">
+    SSL_CTX_set_cipher_list(ctx, "ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM");
+    servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_HTTP, ctx);
+    LOG_PRINT_INFO("main", "HTTPS6 Server socket: " HTTPS_HOST6 ":"+ZNSTR::toString(HTTPS_PORT)+"; " HTTPS_CRT " : " HTTPS_KEY);
+   }
+  }
+ 
+  s= ZNSOCKET::server(WSS_HOST, WSS_PORT, BACK_LOG);
+  if(s < 0) { LOG_PRINT_INFO("main", "Can't open socket: " WSS_HOST ":"+ZNSTR::toString(WSS_PORT)); }
+  else
+  {
+   SSL_CTX* ctx= ZNSOCKET::server_ctx(WSS_CRT, WSS_KEY);
+   if(ctx == NULL) { LOG_PRINT_INFO("main", "Can't open socket: " WSS_HOST ":"+ZNSTR::toString(WSS_PORT)+"; " WSS_CRT " : " WSS_KEY); }
+   else
+   {
+    SSL_CTX_set_cipher_list(ctx, "ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM");
+    servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_WS, ctx);
+    LOG_PRINT_INFO("main", "WSS Server socket: " WSS_HOST ":"+ZNSTR::toString(WSS_PORT)+"; " WSS_CRT " : " HTTPS_KEY);
+   }
+  }
+
+  s= ZNSOCKET::server6(WSS_HOST6, WSS_PORT, BACK_LOG);
+  if(s < 0) { LOG_PRINT_INFO("main", "Can't open socket: " WSS_HOST6 ":"+ZNSTR::toString(WSS_PORT)); }
+  else
+  {
+   SSL_CTX* ctx= ZNSOCKET::server_ctx(WSS_CRT, WSS_KEY);
+   if(ctx == NULL) { LOG_PRINT_INFO("main", "Can't open socket: " WSS_HOST6 ":"+ZNSTR::toString(WSS_PORT)+"; " WSS_CRT " : " WSS_KEY); }
+   else
+   {
+    SSL_CTX_set_cipher_list(ctx, "ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM");
+    servsocks[s]=zPacketThread::zPTParam(zPacketThread::PROTO_WS, ctx);
+    LOG_PRINT_INFO("main", "WSS6 Server socket: " WSS_HOST6 ":"+ZNSTR::toString(WSS_PORT)+"; " WSS_CRT " : " HTTPS_KEY);
+   }
+  }
+ }
+</span>
+<span class="cmnt">
+/*
+ Creating SSL_CTX structure on client side.
+*/</span>
+<span class="docpre">
+ zWEBThread::client_ctx= ZNSOCKET::client_ctx();
+ if(zWEBThread::client_ctx)
+ {
+</span>
+<span class="cmnt">
+/*
+ Locations for ctx, at which CA certificates for verification purposes are located. The certificates available via CAfile and CApath are trusted.
+*/</span>
+<span class="docpre">
+  int r= SSL_CTX_load_verify_locations(zWEBThread::client_ctx, "localhostCA.crt", NULL);
+  LOG_PRINT_DEBUG("main", "SSL_CTX_load_verify_locations="+ZNSTR::toString(r)+";");
+ }
+</span>
+<span class="cmnt">
+/*
+ Creating THREAD_NUMBER working threads.
+*/</span>
+<span class="docpre">
+ std::set&lt;zWEBThread*&gt; servers;
+ for(int i=0; i < THREAD_NUMBER; i++)
+ {
+  zWEBThread* p= new zWEBThread(servsocks);
+  servers.insert(p);
+  p->start();
+ }
+
+ LOG_PRINT_INFO("main", "Main thread has been started.");
+
+ zLog::Log.update();
+
+ for(;;)
+ {
+</span>
+<span class="cmnt">
+/*
+ Write log from the buffer to a file.
+ Update all hosts stored in database. 
+*/</span>
+<span class="docpre">
+  zLog::Log.update();
+  zDNS::update();
+</span>
+<span class="cmnt">
+/*
+  if((zTimer::now()-rt) >= ROTATE_TIMEOUT)
+  {
+   zLog::Log.rotate();
+   rt=zTimer::now();
+  }
+*/
+</span>
+<span class="docpre">
+  if(exit_flag) break;
+  zThread::sleep(50);
+ }
+</span>
+<span class="cmnt">
+/*
+  Stop, join, delete all working threads.
+*/</span>
+<span class="docpre">
+ for(std::set&lt;zWEBThread*&gt;::iterator k=servers.begin(); k != servers.end(); ++k) { (*k)->stop(); }
+ for(std::set&lt;zWEBThread*&gt;::iterator k=servers.begin(); k != servers.end(); ++k) { (*k)->join(); }
+ for(std::set&lt;zWEBThread*&gt;::iterator k=servers.begin(); k != servers.end(); ++k) { delete (*k); }
+ servers.clear();
+</span>
+<span class="cmnt">
+/*
+ Free SSL_CTX structures on client side.
+*/</span>
+<span class="docpre">
+ if(zWEBThread::client_ctx) { ZNSOCKET::free(zWEBThread::client_ctx); zWEBThread::client_ctx= NULL; }
+</span>
+<span class="cmnt">
+/*
+ Free SSL_CTX structures on server side.
+ Close all server sockets.
+*/</span>
+<span class="docpre">
+ for(std::map&lt;int, zPacketThread::zPTParam&gt;::const_iterator k= servsocks.begin(); k != servsocks.end(); ++k)
+ {
+  ZNSOCKET::free(k->second.ctx);
+  ZNSOCKET::close(k->first);
+ }
+ servsocks.clear();
+</span>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Parameters_HTTP"></a>
+<center><span class="caption">Parameters of HTTP query</span></center><br>
+<div  class="doctext">
+<span class="cmnt">
+/*
+ onMessage is called when http request has completely been received.
+*/
+</span>
+<span class="docpre">
+void zWEBThread::onMessage(zPacketHTTP* p)
+{
+</span>
+<span class="cmnt">
+/*
+ Send input parameters of http(s).
+*/</span>
+<span class="docpre">
+ p-&gt;write(head);
+ p-&gt;write("&lt;FORM ACTION='");
+ p-&gt;write("'ENCTYPE='multipart/form-data' METHOD='POST' NAME='form1'  TARGET='_SELF'&gt;\n");
+ p-&gt;write(form);
+ p-&gt;write("&lt;CENTER&gt;\n&lt;TABLE BORDER=1&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;address&lt;/TD&gt;&lt;TD&gt;"+p-&gt;address+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;peerport&lt;/TD&gt;&lt;TD&gt;"+ZNSTR::toString(p-&gt;peerport)+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;host&lt;/TD&gt;&lt;TD&gt;"+p-&gt;host+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;port&lt;/TD&gt;&lt;TD&gt;"+ZNSTR::toString(p-&gt;port)+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;version&lt;/TD&gt;&lt;TD&gt;"+p-&gt;version+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;method&lt;/TD&gt;&lt;TD&gt;"+p-&gt;method+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;path&lt;/TD&gt;&lt;TD&gt;"+p-&gt;path+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;boundary&lt;/TD&gt;&lt;TD&gt;"+p-&gt;boundary+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;length&lt;/TD&gt;&lt;TD&gt;"+ZNSTR::toString(p-&gt;length)+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;chunked&lt;/TD&gt;&lt;TD&gt;"+std::string(p-&gt;chunked?"true":"false")+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;content_type&lt;/TD&gt;&lt;TD&gt;"+p-&gt;content_type+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;keep_alive&lt;/TD&gt;&lt;TD&gt;"+std::string(p-&gt;keep_alive?"true":"false")+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;keep_write&lt;/TD&gt;&lt;TD&gt;"+std::string(p-&gt;keep_write?"true":"false")+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;time_out&lt;/TD&gt;&lt;TD&gt;"+ZNSTR::toString(p-&gt;time_out)+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;max_header&lt;/TD&gt;&lt;TD&gt;"+ZNSTR::toString(p-&gt;max_header)+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ p-&gt;write("&lt;TR&gt;&lt;TD&gt;max_body&lt;/TD&gt;&lt;TD&gt;"+ZNSTR::toString(p-&gt;max_body)+"&lt;/TD&gt;&lt;/TR&gt;\n");
+ for(size_t i=0; i &lt; p-&gt;ranges.size(); i++)
+ { p-&gt;write("&lt;TR&gt;&lt;TD&gt;Ranges["+ZNSTR::toString(i)+"]&lt;/TD&gt;&lt;TD&gt;"+ZNSTR::toString(p-&gt;ranges[i].first)+"-"+ZNSTR::toString(p-&gt;ranges[i].second)+"&lt;/TD&gt;&lt;/TR&gt;\n"); }
+ for(std::map&lt;std::string,std::string&gt;::const_iterator k= p-&gt;head.begin(); k != p-&gt;head.end(); ++k)
+ { p-&gt;write("&lt;TR&gt;&lt;TD&gt;head::"+k-&gt;first+"&lt;/TD&gt;&lt;TD&gt;"+k-&gt;second+"&lt;/TD&gt;&lt;/TR&gt;\n"); }
+ for(std::map&lt;std::string,std::vector&lt;std::string&gt; &gt;::const_iterator k= p-&gt;cookie.begin(); k != p-&gt;cookie.end(); ++k)
+ {
+  for(unsigned i=0; i &lt; k-&gt;second.size(); i++)
+  { p-&gt;write("&lt;TR&gt;&lt;TD&gt;cookie::"+k-&gt;first+"&lt;/TD&gt;&lt;TD&gt;"+k-&gt;second[i]+"&lt;/TD&gt;&lt;/TR&gt;\n"); }
+ }
+ for(std::map&lt;std::string,std::vector&lt;std::string&gt; &gt;::const_iterator k= p-&gt;param.begin(); k != p-&gt;param.end(); ++k)
+ {
+  for(unsigned i=0; i &lt; k-&gt;second.size(); i++)
+  { p-&gt;write("&lt;TR&gt;&lt;TD&gt;param::"+k-&gt;first+"&lt;/TD&gt;&lt;TD&gt;"+k-&gt;second[i]+"&lt;/TD&gt;&lt;/TR&gt;\n"); }
+ }
+ for(std::map&lt;std::string,std::vector&lt;std::pair&lt;std::string,std::string&gt; &gt; &gt;::const_iterator k= p-&gt;file.begin(); k != p-&gt;file.end(); ++k)
+ {
+  for(unsigned i=0; i &lt; k-&gt;second.size(); i++)
+  { p-&gt;write("&lt;TR&gt;&lt;TD&gt;file::"+k-&gt;first+"&lt;/TD&gt;&lt;TD&gt;"+k-&gt;second[i].first+"&lt;/TD&gt;&lt;/TR&gt;\n"); }
+ }
+ p-&gt;write("&lt;/TABLE&gt;\n&lt;/CENTER&gt;\n");
+ p-&gt;write(bottom);
+
+ p-&gt;send("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: "+ZNSTR::toString(p-&gt;str_out.size())+"\r\nConnection: "+((p-&gt;keep_alive)?"keep-alive":"close")+"\r\n\r\n");
+};
+</span>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_files_parts"></a>
+<center><span class="caption">Sending files in parts</span></center><br>
+<div  class="doctext">
+<span class="cmnt">
+/*
+ zFileParam class for sending files in parts.
+ zFileParam is associated with a zPacketHTTP object.
+*/
+</span>
+<span class="docpre">
+class zFileParam: public zParamPacket
+{
+public:
+ zFileParam(zPacket* prn, const std::string &path):
+  zParamPacket(prn),
+  f(path, false),
+  pos(0),
+  pos_end(-1),
+  fin(0)
+ {};
+
+virtual void clear() { delete this; };
+
+ zFile f;
+ longlong pos;
+ longlong pos_end;
+ int fin;
+};
+</span>
+<span class="cmnt">
+/*
+ onMessage is called when http request has completely been received.
+*/
+</span>
+<span class="docpre">
+void zWEBThread::onMessage(zPacketHTTP* p)
+{
+</span>
+<span class="cmnt">
+/*
+ If file is found then send file in parts.
+*/
+</span>
+<span class="docpre">
+ {
+  std::string file_path=ZNSTR::replace(ZNSTR::trim(p-&gt;path," \t/\\"),"..","");
+  if(!file_path.empty() && ZNFILE::check("./files/"+file_path))
+  {
+   p-&gt;keep_alive=false;
+   bool bct=false;
+   size_t n=file_path.rfind('.');
+   if(n != std::string::npos)
+   {
+    std::string q=ZNSTR::toLower(file_path.substr(n+1));
+    if(q == "html" || q == "htm") bct=true;
+   }
+   zFileParam* pf= new zFileParam(p, "./files/"+file_path);
+   p-&gt;ext= pf;
+   pf-&gt;pos_end=pf-&gt;f.size();
+   if(p-&gt;ranges.size())
+   {
+    if(p-&gt;ranges[0].first &lt; 0 && p-&gt;ranges[0].second &lt; 0) { if(pf-&gt;pos_end &gt; -p-&gt;ranges[0].first) pf-&gt;pos= (pf-&gt;pos_end-p-&gt;ranges[0].first); }
+    else if(p-&gt;ranges[0].first &gt;= 0 && p-&gt;ranges[0].second &lt; 0) { pf-&gt;pos= p-&gt;ranges[0].first; }
+    else if(p-&gt;ranges[0].first &gt;= 0)
+    {
+     pf-&gt;pos= p-&gt;ranges[0].first;
+     if(p-&gt;ranges[0].second &gt;= pf-&gt;pos && p-&gt;ranges[0].second &lt; pf-&gt;pos_end) pf-&gt;pos_end=(p-&gt;ranges[0].second+1);
+    }
+   }
+   p-&gt;send("HTTP/1.1 200 OK\r\nContent-Type: "+(bct?std::string("text/html"):("application/octet-stream\r\nContent-Disposition: attachment; filename=\""+file_path+"\""+(pf-&gt;pos_end?("\r\nContent-Range: bytes "+ZNSTR::toString(pf-&gt;pos)+"-"+ZNSTR::toString(pf-&gt;pos_end-1)+"/"+ZNSTR::toString(pf-&gt;pos_end)):"")))+"\r\nContent-Length: "+ZNSTR::toString(pf-&gt;pos_end-pf-&gt;pos)+"\r\nConnection: close\r\n\r\n");
+   LOG_PRINT_DEBUG("zWEBThread", p-&gt;str_out);
+   return;
+  }
+ }
+</span>
+<span class="cmnt">
+};
+</span>
+<span class="docpre">
+void zWEBThread::onWrite(zPacketHTTP* p)
+{
+ if(p-&gt;ext == NULL) return;
+</span>
+<span class="cmnt">// zFileParam* pf= dynamic_cast&lt;zFileParam*&gt;(p-&gt;ext);</span>
+<span class="docpre">
+ zFileParam* pf= zPacket::getParam&lt;zFileParam&gt;(p);
+ if(pf == NULL) { return; }
+ if(pf-&gt;fin) return;
+ longlong l=pf-&gt;f.size();
+ if(l &lt; (longlong) (pf-&gt;pos))
+ {
+  LOG_PRINT_DEBUG("zWEBThread", "onWrite: pf-&gt;f.size()("+ZNSTR::toString(l)+") &lt; pf-&gt;f.pos("+ZNSTR::toString((longlong) (pf-&gt;pos))+")");
+  return;
+ }
+ size_t c_s=CHUNK_SIZE;
+ if((pf-&gt;pos_end-pf-&gt;pos) &lt; c_s) c_s=(pf-&gt;pos_end-pf-&gt;pos);
+ pf-&gt;f.read(p-&gt;str_out, pf-&gt;pos, c_s);
+ if(p-&gt;str_out.size() == 0) { pf-&gt;pos=pf-&gt;pos_end; pf-&gt;fin=1; return; }
+ size_t n=p-&gt;str_out.size();
+ pf-&gt;pos+=n;
+ if(pf-&gt;pos &gt;= pf-&gt;pos_end) { pf-&gt;fin=1; }
+};
+</span>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Echo"></a>
+<center><span class="caption">Echo service for websocket</span></center><br>
+<div  class="doctext">
+<span class="cmnt">
+/*
+ onMessage is called when message has been received.
+*/
+</span>
+<span class="docpre">
+void zWEBThread::onMessage(zPacketWS* p)
+{
+ p-&gt;send(p-&gt;message, (p-&gt;fin_flag)?false:true);
+};
+</span>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_HTTP_Proxy"></a>
+<center><span class="caption">HTTP Proxy</span></center><br>
+<div  class="doctext">
+<span class="cmnt">
+/*
+ zHTTPPacketParam class for binding with zClientHTTP object(REST Api).
+ zHTTPPacketParam is associated with a zPacketHTTP object as zParamPacket* ext member.
+*/</span>
+<span class="docpre">
+class zHTTPPacketParam: public zParamPacket
+{
+public:
+ zHTTPPacketParam(zPacket* prn, zClientHTTP* cln):
+  zParamPacket(prn),
+  client(cln)
+ {};
+
+virtual ~zHTTPPacketParam();
+
+virtual void clear() { delete this; };
+
+ zClientHTTP* client;
+
+};
+</span>
+<span class="cmnt">
+/*
+ zHTTPClientParam class for binding with zPacketHTTP object(REST Api).
+ zHTTPClientParam is associated with a zClientHTTP object as zParamPacket* ext member.
+*/</span>
+<span class="docpre">
+class zHTTPClientParam: public zParamPacket
+{
+public:
+ zHTTPClientParam(zPacket* prn, zPacketHTTP* pct):
+  zParamPacket(prn),
+  packet(pct),
+  response(0)
+ {};
+
+virtual ~zHTTPClientParam();
+
+virtual void clear() { delete this; };
+
+ zPacketHTTP* packet;
+ int response;
+
+};
+</span>
+<span class="cmnt">
+/*
+ If zPacketHTTP is bound with zClientHTTP then pointer to itself is set to NULL;
+*/</span>
+<span class="docpre">
+zHTTPPacketParam::~zHTTPPacketParam()
+{
+ if(client && client-&gt;ext)
+ {
+  zHTTPClientParam* p= zPacket::getParam&lt;zHTTPClientParam&gt;(client);
+  if(p) p-&gt;packet=NULL;
+ }
+};
+</span>
+<span class="cmnt">
+/*
+ If zClientHTTP is bound with zPacketHTTP then pointer to itself is set to NULL;
+*/</span>
+<span class="docpre">
+zHTTPClientParam::~zHTTPClientParam()
+{
+ if(packet && packet-&gt;ext)
+ {
+  zHTTPPacketParam* p= zPacket::getParam&lt;zHTTPPacketParam&gt;(packet);
+  if(p) p-&gt;client=NULL;
+ }
+};
+</span>
+<span class="cmnt">
+/*
+ onMessage is called when http request has completely been received.
+*/</span>
+<span class="docpre">
+void zWEBThread::onMessage(zPacketHTTP* p)
+{
+</span>
+<span class="cmnt">
+/*
+ If path is 'proxy' then send request through proxy.
+*/</span>
+<span class="docpre">
+ if(ZNSTR::trim(p-&gt;path," \t/\\") == "proxy")
+ {
+  size_t n=p-&gt;str_header.find("proxy");
+  if(n != std::string::npos)
+  {
+</span>
+<span class="cmnt">
+/*
+ Check already established connections that have been stored as keep_alive.
+*/</span>
+<span class="docpre">
+   zClientHTTP* cp= NULL; 
+   switch(fml)
+   {
+    case AF_INET: { cp= getClientHTTP(p->host,p->port); break; }
+    case AF_INET6: { cp= getClientHTTP6(p->host,p->port); break; }
+   }
+</span>
+<span class="cmnt">
+/*
+  Try to set connection to host:port.
+*/</span>
+<span class="docpre">
+   bool bka=false;
+   if(cp == NULL)
+   {
+    switch(fml)
+    {
+     case AF_INET:
+     {
+      LOG_PRINT_DEBUG("zWEBThread", "connectHTTP family is AF_INET.");
+      cp= connectHTTP(p->host,p->port, (p->ssl && zWEBThread::client_ctx)?(zWEBThread::client_ctx):(NULL));
+      break;
+     }
+     case AF_INET6:
+     {
+      LOG_PRINT_DEBUG("zWEBThread", "connectHTTP6 family is AF_INET6.");
+      cp= connectHTTP6(p->host,p->port, (p->ssl && zWEBThread::client_ctx)?(zWEBThread::client_ctx):(NULL));
+      break;
+     }
+     default: { LOG_PRINT_DEBUG("zWEBThread", "connectHTTP is not AF_INET/AF_INET6?"); break; }
+    }
+   }
+   else { bka=true; LOG_PRINT_DEBUG("zWEBThread", "zClientHTTP is gotten from keepalive."); }
+
+   if(cp)
+   {
+    if(p-&gt;ext)
+    {
+     LOG_PRINT_DEBUG("zWEBThread", "zPacketHTTP-&gt;ext is not NULL?");
+     delete p-&gt;ext;
+    }
+    if(cp-&gt;ext)
+    {
+     LOG_PRINT_DEBUG("zWEBThread", "zClientHTTP-&gt;ext is not NULL?");
+     delete cp-&gt;ext;
+    }
+</span>
+<span class="cmnt">
+/*
+  Set binding between zPacketHTTP and zClientHTTP.
+*/</span>
+<span class="docpre">
+    zHTTPPacketParam* p_prm= new zHTTPPacketParam(p, cp);
+    p-&gt;ext= p_prm;
+    zHTTPClientParam* c_prm= new zHTTPClientParam(cp, p);
+    cp-&gt;ext= c_prm;
+    p-&gt;str_header[n]='P'; p-&gt;str_header[n+1]='R'; p-&gt;str_header[n+2]='O'; p-&gt;str_header[n+3]='X'; p-&gt;str_header[n+4]='Y';
+    if(bka) sendRequest(cp);
+    return;
+   }
+   else { LOG_PRINT_DEBUG("zWEBThread", "Can't create zClientHTTP?"); }
+  }
+ }
+</span>
+<span class="cmnt">
+};
+</span>
+</span>
+<span class="cmnt">
+/*
+ onOpen is called when connection has been established.
+*/</span>
+<span class="docpre">
+void zWEBThread::onOpen(zClientHTTP* p)
+{</span>
+<span class="cmnt">
+/*
+ Check SSL certificate on client side.
+*/
+/*
+ sendRequest is defined in zWEBThread.cpp.
+*/</span>
+<span class="docpre">
+ sendRequest(p);
+};
+</span>
+<span class="cmnt">
+/*
+ onMessage is called when message has been received.
+*/</span>
+<span class="docpre">
+void zWEBThread::onMessage(zClientHTTP* p)
+{
+</span>
+<span class="cmnt">// zHTTPClientParam* pc= dynamic_cast&lt;zHTTPClientParam*&gt;(p-&gt;ext);</span>
+<span class="docpre">
+ zHTTPClientParam* pc= zPacket::getParam&lt;zHTTPClientParam&gt;(p);
+ if(pc == NULL || pc-&gt;packet == NULL) { return; }
+ if(pc-&gt;response) return;
+ pc-&gt;response=1;
+ pc-&gt;packet-&gt;write(p-&gt;str_in);
+ pc-&gt;packet-&gt;send(p-&gt;str_header);
+};
+</span>
+<span class="docpre">
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_WS_Proxy"></a>
+<center><span class="caption">WS Proxy</span></center><br>
+<div  class="doctext">
+<span class="cmnt">
+/*
+ zWSPacketParam class for binding with zClientWS object(REST Api).
+ zWSPacketParam is associated with a zPacketWS object as zParamPacket* ext member.
+*/</span>
+<span class="docpre">
+class zWSPacketParam: public zParamPacket
+{
+public:
+ zWSPacketParam(zPacket* prn, zClientWS* cln):
+  zParamPacket(prn),
+  client(cln)
+ {};
+
+virtual ~zWSPacketParam();
+
+virtual void clear() { delete this; };
+
+ zClientWS* client;
+
+};
+</span>
+<span class="cmnt">
+/*
+ zWSClientParam class for binding with zPacketWS object(REST Api).
+ zWSClientParam is associated with a zClientWS object as zParamPacket* ext member.
+*/</span>
+<span class="docpre">
+class zWSClientParam: public zParamPacket
+{
+public:
+ zWSClientParam(zPacket* prn, zPacketWS* pct):
+  zParamPacket(prn),
+  packet(pct)
+ {};
+
+virtual ~zWSClientParam();
+
+virtual void clear() { delete this; };
+
+ zPacketWS* packet;
+
+};
+</span>
+<span class="cmnt">
+/*
+ If zPacketWS is bound with zClientWS then pointer to itself is set to NULL;
+*/</span>
+<span class="docpre">
+zWSPacketParam::~zWSPacketParam()
+{
+ if(client && client-&gt;ext)
+ {
+  zWSClientParam* p= zPacket::getParam&lt;zWSClientParam&gt;(client);
+  if(p) p-&gt;packet=NULL;
+ }
+};
+</span>
+<span class="cmnt">
+/*
+ If zClientWS is bound with zPacketWS then pointer to itself is set to NULL;
+*/</span>
+<span class="docpre">
+zWSClientParam::~zWSClientParam()
+{
+ if(packet && packet-&gt;ext)
+ {
+  zWSPacketParam* p= zPacket::getParam&lt;zWSPacketParam&gt;(packet);
+  if(p) p-&gt;client=NULL;
+ }
+};
+</span>
+<span class="cmnt">
+/*
+ onOpen is called when connection and ws-handshake has been established.
+*/</span>
+<span class="docpre">
+void zWEBThread::onOpen(zPacketWS* p)
+{
+ p-&gt;time_out=WS_TIMEOUT;
+ p-&gt;accept();
+ if(ZNSTR::trim(p-&gt;path," \t/\\") == "proxy")
+ {
+</span>
+<span class="cmnt">
+/*
+  Try to set connection to host:port.
+*/</span>
+<span class="docpre">
+  zClientWS* cp= NULL;
+  {
+    int fml= p->family();
+    switch(fml)
+    {
+     case AF_INET: { cp= connectWS(p->host, p->port, "/PROXY", "13", (p->ssl && zWEBThread::client_ctx)?(zWEBThread::client_ctx):(NULL)); break; }
+     case AF_INET6: { cp= connectWS6(p->host, p->port, "/PROXY", "13", (p->ssl && zWEBThread::client_ctx)?(zWEBThread::client_ctx):(NULL)); break; }
+     default: break;
+    }
+  } 
+
+  if(cp)
+  {
+   if(p-&gt;ext)
+   {
+    LOG_PRINT_DEBUG("zWEBThread", "zPacketWS-&gt;ext is not NULL?");
+    delete p-&gt;ext;
+   }
+   if(cp-&gt;ext)
+   {
+    LOG_PRINT_DEBUG("zWEBThread", "zClientWS-&gt;ext is not NULL?");
+    delete cp-&gt;ext;
+   }
+</span>
+<span class="cmnt">
+/*
+  Set binding between zPacketWS and zClientWS.
+*/</span>
+<span class="docpre">
+   zWSPacketParam* p_prm= new zWSPacketParam(p, cp);
+   p-&gt;ext= p_prm;
+   zWSClientParam* c_prm= new zWSClientParam(cp, p);
+   cp-&gt;ext= c_prm;
+  }
+  else { LOG_PRINT_DEBUG("zWEBThread", "Can't create zClientWS?"); }
+ }
+};
+</span>
+<span class="cmnt">
+/*
+ onMessage is called when message has been received.
+*/</span>
+<span class="docpre">
+void zWEBThread::onMessage(zPacketWS* p)
+{
+ zWSPacketParam* p_prm= zPacket::getParam&lt;zWSPacketParam&gt;(p);
+ if(p_prm)
+ {
+  if(p_prm-&gt;client && p_prm-&gt;client-&gt;status == ZWS_CLIENT_CONNECTED)
+  {
+   p_prm-&gt;client-&gt;send(p-&gt;message, (p-&gt;fin_flag)?false:true);
+  }
+  else { p-&gt;send("\nProxy connection is not alive.", false); }
+  return;
+ }
+ p-&gt;send(p-&gt;message, (p-&gt;fin_flag)?false:true);
+};
+</span>
+<span class="cmnt">
+/*
+ onMessage is called when message has been received.
+*/</span>
+<span class="docpre">
+void zWEBThread::onMessage(zClientWS* p)
+{
+ zWSClientParam* c_prm= zPacket::getParam&lt;zWSClientParam&gt;(p);
+ if(c_prm && c_prm-&gt;packet && c_prm-&gt;packet-&gt;status == ZWS_PACKET_ACCEPTED)
+ { c_prm-&gt;packet-&gt;send("PROXY REPLY:\n"+p-&gt;message, (p-&gt;fin_flag)?false:true); }
+ else p-&gt;close();
+};
+</span>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_certificate"></a>
+<center><span class="caption">Checking of SSL certificate</span></center><br>
+<div  class="doctext">
+<span class="cmnt">
+/*
+ onOpen is called when connection has been established.
+*/</span>
+<span class="docpre">
+void zWEBThread::onOpen(zClientHTTP* p)
+{
+</span>
+<span class="cmnt">
+/*
+ Check SSL certificate on client side.
+*/</span>
+<span class="docpre">
+ if(p->ssl)
+ {
+</span>
+<span class="cmnt">
+/*
+ X509 *SSL_get_peer_certificate(const SSL *ssl) returns a pointer to the X509 certificate the peer presented.
+ If the peer did not present a certificate, NULL is returned.
+*/</span>
+<span class="docpre">
+  X509* cert = ::SSL_get_peer_certificate(p->ssl);
+  if(cert)
+  {
+</span>
+<span class="cmnt">
+/*
+ long SSL_get_verify_result(const SSL *ssl) returns the result of the verification of the X509 certificate presented by the peer, if any. 
+*/</span>
+<span class="docpre">
+   if(::SSL_get_verify_result(p->ssl) == X509_V_OK)
+   {
+</span>
+<span class="cmnt">
+/*
+ Function static bool check_host(X509* cert, const std::string& hst) checks host name and ip address.
+ See zWEBThread.cpp.
+*/</span>
+<span class="docpre">
+    bool bch=check_host(cert, p->host);
+    LOG_PRINT_DEBUG("zWEBThread", "ClientHTTP::check_host("+p->host+")="+ ZNSTR::toString((int) bch)+";");
+   }
+   else
+   {
+    LOG_PRINT_DEBUG("zWEBThread", "ClientHTTP::error_verify_result");
+    X509_free(cert);
+    sendReply(p, "ClientHTTP error verify result");
+    p->close();
+    return;
+   }
+   X509_free(cert);
+  }
+  else
+  {
+   LOG_PRINT_DEBUG("zWEBThread", "ClientHTTP::no_cerificate");
+   sendReply(p, "ClientHTTP no cerificate");
+   p->close();
+   return;
+  }
+ }
+ sendRequest(p);
+};
+</span>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Test"></a>
+<center><span class="caption">Test</span></center><br>
+<div  class="doctext">
+ Test of the http and https can be reached at:<br>
+ http://localhost:12358/your_path - shows all the input parameters of http.<br>
+ https://localhost:12359/your_path - shows all the input parameters of https.<br><br>
+
+ Test of the websocket(ws and wss) can be reached at:<br>
+ http://localhost:12358/index.html - ws connection.<br>
+ https://localhost:12359/indexes.html - wss connection.<br><br>
+
+ Test of the http and websocket proxy (REST Api) can be reached at:<br>
+ http://localhost:12358/proxy - http proxy.<br>
+ https://localhost:12359/proxy - https proxy.<br>
+ http://localhost:12358/proxy - ws proxy.<br>
+ https://localhost:12359/proxy - wss proxy.<br><br>
+
+ Note: For testing https and wss, add 'localhostCA.crt' certificate to the list of trusted certificates in your browser.<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+</BODY></HTML>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <openssl/sha.h>
+#include <stdio.h>
+#include <string.h>
 
 #define CHUNK_SIZE 16384
 #define KEEP_WRITE_TIMEOUT 10000
@@ -54,98 +56,75 @@ static bool check_name(const std::string& name, const char* p, size_t plen)
 */
 static bool check_host(X509* cert, const std::string& hst)
 {
- std::string host=ZNSTR::trim(hst," \t/\\");
+ std::string host=ZNSTR::trim(hst," \t/\\[]");
  if(cert == NULL || host.empty()) return false;
 
 #ifdef X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT
-   LOG_PRINT_DEBUG("System", "X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT");
-   if(X509_check_host(cert, host.c_str(), host.size(), 0, NULL) == 1) { return true; }
-   if(host == zDNS::host(host))
-   {
-    size_t k=host.find('.');
-    if(k != std::string::npos)
-    {
-     const char* p=host.c_str(); 
-     unsigned char adr[4];
-     adr[0]=ZNSTR::asUnsignedChar(p, k);
-     size_t l=(k+1);
-     k=host.find('.',l);
-     if(k != std::string::npos)
-     {
-      adr[1]= ZNSTR::asUnsignedChar(p+l, k-l);
-      l=(k+1); 
-      k=host.find('.',l);
-      if(k != std::string::npos)
-      {
-       adr[2]= ZNSTR::asUnsignedChar(p+l, k-l);
-       ++k;
-       adr[3]= ZNSTR::asUnsignedChar(p+k, host.size()-k);
-       if(X509_check_ip(cert, adr, sizeof(adr), 0) == 1) { return true; }
-      }
-     }
-    }
-   }
-   return false;
-#else
-   LOG_PRINT_DEBUG("System", "X509_OLD_VERSION");
-   ASN1_STRING* str;
-   STACK_OF(GENERAL_NAME)* altnames;
-   const char* p;
-   size_t plen;
-   altnames = (STACK_OF(GENERAL_NAME)*) X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
-   if(altnames)
-   {
-    int n = sk_GENERAL_NAME_num(altnames);
-    GENERAL_NAME* altname;
-    for(int i = 0; i < n; i++)
-    {
-     altname = sk_GENERAL_NAME_value(altnames, i);
-     if(altname->type == GEN_DNS)
-     {
-      str = altname->d.dNSName;
-      p= (const char*) ASN1_STRING_data(str);
-//      p= (const char*) ASN1_STRING_get0_data(str);
-      plen= ASN1_STRING_length(str);
-      if(check_name(host, p, plen))
-      {
-       GENERAL_NAMES_free(altnames);
-       return true;
-      }
-     }
-     else if(altname->type == GEN_IPADD)
-     {
-      str = (ASN1_STRING*) altname->d.iPAddress;
-      p= (const char*) ASN1_STRING_data(str);
-//      p= (const char*) ASN1_STRING_get0_data(str);
-      plen= ASN1_STRING_length(str);
-      std::string l;
-      for(size_t i=0; i < plen; i++) { if(i) { l+='.'; l+=ZNSTR::toString(p[i]); } else l+=ZNSTR::toString(p[i]); }
-      if(check_name(host, l.c_str(), l.size()))
-      {
-       GENERAL_NAMES_free(altnames);
-       return true;
-      }
-     }
-    }
-    GENERAL_NAMES_free(altnames);
-//    return false;
-   }
+ LOG_PRINT_DEBUG("System", "X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT");
+ if(X509_check_host(cert, host.c_str(), host.size(), 0, NULL) == 1) { return true; }
 
-   X509_NAME* sname = X509_get_subject_name(cert);
-   if(sname == NULL) { return false; }
-   X509_NAME_ENTRY* entry;
-   for(int i= -1;;)
+ return false;
+
+#else
+ LOG_PRINT_DEBUG("System", "X509_OLD_VERSION");
+ ASN1_STRING* str;
+ STACK_OF(GENERAL_NAME)* altnames;
+ const char* p;
+ size_t plen;
+ altnames = (STACK_OF(GENERAL_NAME)*) X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
+ if(altnames)
+ {
+  int n = sk_GENERAL_NAME_num(altnames);
+  GENERAL_NAME* altname;
+  for(int i = 0; i < n; i++)
+  {
+   altname = sk_GENERAL_NAME_value(altnames, i);
+   if(altname->type == GEN_DNS)
    {
-    i = X509_NAME_get_index_by_NID(sname, NID_commonName, i);
-    if(i < 0) { break; }
-    entry = X509_NAME_get_entry(sname, i);
-    str = X509_NAME_ENTRY_get_data(entry);
+    str = altname->d.dNSName;
     p= (const char*) ASN1_STRING_data(str);
 //    p= (const char*) ASN1_STRING_get0_data(str);
     plen= ASN1_STRING_length(str);
-    if(check_name(host, p, plen)) { return true; }
+    if(check_name(host, p, plen))
+    {
+     GENERAL_NAMES_free(altnames);
+     return true;
+    }
    }
-   return false;
+   else if(altname->type == GEN_IPADD)
+   {
+    str = (ASN1_STRING*) altname->d.iPAddress;
+    p= (const char*) ASN1_STRING_data(str);
+//    p= (const char*) ASN1_STRING_get0_data(str);
+    plen= ASN1_STRING_length(str);
+    std::string l;
+    for(size_t i=0; i < plen; i++) { if(i) { l+='.'; l+=ZNSTR::toString(p[i]); } else l+=ZNSTR::toString(p[i]); }
+    if(check_name(host, l.c_str(), l.size()))
+    {
+     GENERAL_NAMES_free(altnames);
+     return true;
+    }
+   }
+  }
+  GENERAL_NAMES_free(altnames);
+//  return false;
+ }
+
+ X509_NAME* sname = X509_get_subject_name(cert);
+ if(sname == NULL) { return false; }
+ X509_NAME_ENTRY* entry;
+ for(int i= -1;;)
+ {
+  i = X509_NAME_get_index_by_NID(sname, NID_commonName, i);
+  if(i < 0) { break; }
+  entry = X509_NAME_get_entry(sname, i);
+  str = X509_NAME_ENTRY_get_data(entry);
+  p= (const char*) ASN1_STRING_data(str);
+//  p= (const char*) ASN1_STRING_get0_data(str);
+  plen= ASN1_STRING_length(str);
+  if(check_name(host, p, plen)) { return true; }
+ }
+ return false;
 #endif
 };
 
@@ -407,16 +386,40 @@ void zWEBThread::onMessage(zPacketHTTP* p)
   size_t n=p->str_header.find("proxy");
   if(n != std::string::npos)
   {
+   int fml= p->family();
 /*
  Check already established connections that have been stored as keep_alive.
 */
-   zClientHTTP* cp= getClientHTTP(p->host,p->port);
+   zClientHTTP* cp= NULL; 
+   switch(fml)
+   {
+    case AF_INET: { cp= getClientHTTP(p->host,p->port); break; }
+    case AF_INET6: { cp= getClientHTTP6(p->host,p->port); break; }
+   }
 /*
   Try to set connection to host:port.
 */
    bool bka=false;
-   if(cp == NULL) cp= connectHTTP(p->host,p->port, (p->ssl && zWEBThread::client_ctx)?(zWEBThread::client_ctx):(NULL));
-   else bka=true;
+   if(cp == NULL)
+   {
+    switch(fml)
+    {
+     case AF_INET:
+     {
+      LOG_PRINT_DEBUG("zWEBThread", "connectHTTP family is AF_INET.");
+      cp= connectHTTP(p->host,p->port, (p->ssl && zWEBThread::client_ctx)?(zWEBThread::client_ctx):(NULL));
+      break;
+     }
+     case AF_INET6:
+     {
+      LOG_PRINT_DEBUG("zWEBThread", "connectHTTP6 family is AF_INET6.");
+      cp= connectHTTP6(p->host,p->port, (p->ssl && zWEBThread::client_ctx)?(zWEBThread::client_ctx):(NULL));
+      break;
+     }
+     default: { LOG_PRINT_DEBUG("zWEBThread", "connectHTTP is not AF_INET/AF_INET6?"); break; }
+    }
+   }
+   else { bka=true; LOG_PRINT_DEBUG("zWEBThread", "zClientHTTP is gotten from keepalive."); }
 
    if(cp)
    {
@@ -558,7 +561,16 @@ void zWEBThread::onOpen(zPacketWS* p)
 /*
   Try to set connection to host:port.
 */
-  zClientWS* cp= connectWS(p->host, p->port, "/PROXY", "13", (p->ssl && zWEBThread::client_ctx)?(zWEBThread::client_ctx):(NULL));
+  zClientWS* cp= NULL;
+  {
+    int fml= p->family();
+    switch(fml)
+    {
+     case AF_INET: { cp= connectWS(p->host, p->port, "/PROXY", "13", (p->ssl && zWEBThread::client_ctx)?(zWEBThread::client_ctx):(NULL)); break; }
+     case AF_INET6: { cp= connectWS6(p->host, p->port, "/PROXY", "13", (p->ssl && zWEBThread::client_ctx)?(zWEBThread::client_ctx):(NULL)); break; }
+     default: break;
+    }
+  } 
   if(cp)
   {
    if(p->ext)

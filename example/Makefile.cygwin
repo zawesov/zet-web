@@ -2,12 +2,12 @@ PREFIX ?= /usr/local
 
 CC=g++
 
-INC = zetweb_3.4
+INC = zetweb_3.6
 
 CFLAGS= -g -Wno-reorder -I $(PREFIX)/include/$(INC)
 LDPATH= 
 LIBPATH = -L /usr/local/lib
-LIBS= -lpthread -ldl -levent -lssl -lcrypto -lzetweb_3.4
+LIBS= -lpthread -ldl -levent -lssl -lcrypto -lzetweb_3.6
 LIBNAME=
 #TLOPT=/C /P64
 
@@ -24,7 +24,7 @@ clean:
 
 zWEBServer.exe : $(OBJS)
 	@rm -f zWEBServer.exe
-	$(CC) $(OBJS) /usr/local/lib/libzetweb_3.4.a $(LDPATH) $(LIBPATH) $(LIBS) -o zWEBServer.exe
+	$(CC) $(OBJS) /usr/local/lib/libzetweb_3.6.a $(LDPATH) $(LIBPATH) $(LIBS) -o zWEBServer.exe
 
 zWEBThread.o: zWEBThread.h zWEBThread.cpp
 	$(CC) $(CFLAGS) -c zWEBThread.cpp

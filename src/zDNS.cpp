@@ -22,71 +22,131 @@ zDNS::~zDNS()
 
 std::string zDNS::Host(const std::string &addr)
 {
- std::string adr=ZNSTR::trim(addr);
+ std::string adr=ZNSTR::trim(addr, " \t\v\r\n[]");
 
  {
   zRWMutexLock m(&m_mut, false);
   std::map<std::string, zDNS::zDNSValue>::const_iterator k= m_value->find(adr);
-  if(k != m_value->end() && !(k->second.value.empty()))
+  if(k != m_value->end())
   {
-   zMutexLock mi(&m_im);
-   if(k->second.index < k->second.value.size()) return k->second.value[k->second.index++];
-   k->second.index=0;
-   return k->second.value[k->second.index];
+   if(!(k->second.value.empty()))
+   {
+    zMutexLock mi(&m_im);
+    if(k->second.index < k->second.value.size()) return k->second.value[k->second.index++];
+    k->second.index=0;
+    return k->second.value[k->second.index];
+   }
+   return "";
   }
  }
 
- std::vector<std::string> v;
- ZNSOCKET::host(v,adr);
- if(v.empty()) { return ""; }
+ zDNS::zDNSValue v;
+ if(ZNSOCKET::resolve(v.value, v.value6,adr) == 0) { ZNSOCKET::resolve(v.value, v.value6,adr); }
 
  {
   zRWMutexLock m(&m_mut, true);
+  (*m_value)[adr]=v;
   std::map<std::string, zDNS::zDNSValue>::const_iterator k= m_value->find(adr);
-  if(k != m_value->end() && !(k->second.value.empty()))
+  if(!(k->second.value.empty()))
   {
    if(k->second.index < k->second.value.size()) return k->second.value[k->second.index++];
    k->second.index=0;
-   return k->second.value[k->second.index];
+   return k->second.value[k->second.index++];
   }
-  zDNS::zDNSValue* p=&((*m_value)[adr]);
-  p->value=v;
-  if(p->index < p->value.size()) return p->value[p->index++];
-  p->index=0;
-  return p->value[p->index];
+  return "";
+ }
+};
+
+std::string zDNS::Host6(const std::string &addr)
+{
+ std::string adr=ZNSTR::trim(addr, " \t\v\r\n[]");
+
+ {
+  zRWMutexLock m(&m_mut, false);
+  std::map<std::string, zDNS::zDNSValue>::const_iterator k= m_value->find(adr);
+  if(k != m_value->end())
+  {
+   if(!(k->second.value6.empty()))
+   {
+    zMutexLock mi(&m_im);
+    if(k->second.index6 < k->second.value6.size()) return k->second.value6[k->second.index6++];
+    k->second.index6=0;
+    return k->second.value6[k->second.index6++];
+   }
+   return "";
+  }
+ }
+
+ zDNS::zDNSValue v;
+ if(ZNSOCKET::resolve(v.value, v.value6,adr) == 0) { ZNSOCKET::resolve(v.value, v.value6,adr); }
+
+ {
+  zRWMutexLock m(&m_mut, true);
+  (*m_value)[adr]=v;
+  std::map<std::string, zDNS::zDNSValue>::const_iterator k= m_value->find(adr);
+  if(!(k->second.value6.empty()))
+  {
+   if(k->second.index6 < k->second.value6.size()) return k->second.value6[k->second.index6++];
+   k->second.index6=0;
+   return k->second.value6[k->second.index6++];
+  }
+  return "";
  }
 };
 
 size_t zDNS::Host(std::vector<std::string>& ret, const std::string &addr)
 {
- std::string adr=ZNSTR::trim(addr);
+ std::string adr=ZNSTR::trim(addr, " \t\v\r\n[]");
+
  {
   zRWMutexLock m(&m_mut, false);
   std::map<std::string, zDNS::zDNSValue>::const_iterator k= m_value->find(adr);
-  if(k != m_value->end() && !(k->second.value.empty()))
+  if(k != m_value->end())
   {
    ret= k->second.value;
    return ret.size();
   }
  }
 
- ret.clear();
- size_t n=ZNSOCKET::host(ret,adr);
- if(n == 0) { return n; }
+ zDNS::zDNSValue v;
+ if(ZNSOCKET::resolve(v.value, v.value6,adr) == 0) { ZNSOCKET::resolve(v.value, v.value6,adr); }
 
  {
   zRWMutexLock m(&m_mut, true);
-  std::map<std::string, zDNS::zDNSValue>::const_iterator k= m_value->find(adr);
-  if(k != m_value->end() && !(k->second.value.empty())) return n;
-  zDNS::zDNSValue* p=&((*m_value)[adr]);
-  p->value=ret;
+  (*m_value)[adr]=v;
+  ret= v.value;
+  return ret.size();
  }
- return n;
+};
+
+size_t zDNS::Host6(std::vector<std::string>& ret, const std::string &addr)
+{
+ std::string adr=ZNSTR::trim(addr, " \t\v\r\n[]");
+
+ {
+  zRWMutexLock m(&m_mut, false);
+  std::map<std::string, zDNS::zDNSValue>::const_iterator k= m_value->find(adr);
+  if(k != m_value->end())
+  {
+   ret= k->second.value6;
+   return ret.size();
+  }
+ }
+
+ zDNS::zDNSValue v;
+ if(ZNSOCKET::resolve(v.value, v.value6,adr) == 0) { ZNSOCKET::resolve(v.value, v.value6,adr); }
+
+ {
+  zRWMutexLock m(&m_mut, true);
+  (*m_value)[adr]=v;
+  ret= v.value6;
+  return ret.size();
+ }
 };
 
 bool zDNS::Erase(const std::string &addr)
 {
- std::string adr=ZNSTR::trim(addr);
+ std::string adr=ZNSTR::trim(addr, " \t\v\r\n[]");
  zRWMutexLock m(&m_mut, true);
  std::map<std::string, zDNS::zDNSValue>::iterator k= m_value->find(adr);
  if(k == m_value->end()) return false;
@@ -102,9 +162,20 @@ void zDNS::Clear()
 
 bool zDNS::Check(const std::string &addr) const
 {
- std::string adr=ZNSTR::trim(addr);
+ std::string adr=ZNSTR::trim(addr, " \t\v\r\n[]");
  zRWMutexLock m(&m_mut, false);
- return m_value->count(adr);
+ std::map<std::string, zDNS::zDNSValue>::iterator k= m_value->find(adr);
+ if(k == m_value->end()) return false;
+ return !(k->second.value.empty());
+};
+
+bool zDNS::Check6(const std::string &addr) const
+{
+ std::string adr=ZNSTR::trim(addr, " \t\v\r\n[]");
+ zRWMutexLock m(&m_mut, false);
+ std::map<std::string, zDNS::zDNSValue>::iterator k= m_value->find(adr);
+ if(k == m_value->end()) return false;
+ return !(k->second.value6.empty());
 };
 
 size_t zDNS::Size()
@@ -130,15 +201,10 @@ void zDNS::Update()
   zRWMutexLock m(&m_mut, false);
   for(std::map<std::string, zDNS::zDNSValue>::const_iterator k= m_value->begin(); k != m_value->end(); ++k) { (*m_storage)[k->first]; }
  }
-
- std::list<std::string> rl;
+// std::list<std::string> rl;
  for(std::map<std::string, zDNS::zDNSValue>::iterator k= m_storage->begin(); k != m_storage->end(); ++k)
- {
-  k->second.value.clear();
-  ZNSOCKET::host(k->second.value,k->first);
-  if(k->second.value.empty()) rl.push_back(k->first);
- }
- for(std::list<std::string>::iterator l=rl.begin(); l != rl.end(); ++l) { m_storage->erase(*l); }
+ { if(ZNSOCKET::resolve(k->second.value,k->second.value6,k->first)== 0) { ZNSOCKET::resolve(k->second.value,k->second.value6,k->first); } }
+// for(std::list<std::string>::iterator l=rl.begin(); l != rl.end(); ++l) { m_storage->erase(*l); }
 
  {
   std::map<std::string, zDNS::zDNSValue>* p= m_storage;

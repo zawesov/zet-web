@@ -1,0 +1,2958 @@
+<!DOCTYPE HTML PUBLIC '-//IETF//DTD HTML//EN'>
+<HTML>
+<HEAD>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+<TITLE>ZET-WEB DOCUMENTATION</TITLE>
+
+<style>
+ .contents { font-size: 20; font-style: italic; font-weight: bold; color: #008080 }
+ .doctext  { text-align: justify; margin-left: 10; font-size: 18; font-style: normal; font-weight: normal; color: #000000 }
+ .caption  { text-align: center; white-space: nowrap; font-size: 20; font-style: italic; font-weight: bold; color: #008080 }
+ .ifc  { text-align: center; margin-left: 10; white-space: nowrap; font-size: 18; font-style: italic; font-weight: bold; color: #000000 }
+</style>
+
+</HEAD>
+<BODY  bgcolor='#FFFFFF'>
+<br><br><br><center><span class="caption" style="color: #000000; font-size: 23">ZET-WEB 3.6. </span></center><br><br><br>
+                                                                                             /home/alz/mydoc/LIBTEST/ZET-WEB_3.6S/doc/Documentation_3.6.html
+<ul>
+<li style="margin-left: 15"><a href="#p_Introduction"><span class="contents"> Introduction </span> </a></li>
+
+<li style="margin-left: 15"><a href="#p_String"><span class="contents"> String </span> </a></li>
+
+<li style="margin-left: 15"><a href="#p_Smart_pointer"><span class="contents"> Smart pointer </span> </a></li>
+
+<li style="margin-left: 15"><a href="#p_Random"><span class="contents"> Random </span> </a></li>
+
+<li style="margin-left: 15"> <span class="contents"> Mutexes </span> </li>
+<li style="margin-left: 30"><a href="#p_Mutex_MutexLock"><span class="contents"> Mutex, MutexLock</span> </a></li>
+<li style="margin-left: 30"><a href="#p_RWMutex_RWMutexLock"><span class="contents"> RWMutex, RWMutexLock</span> </a></li>
+
+
+<li style="margin-left: 15"><span class="contents"> File system </span></li>
+<li style="margin-left: 30"><a href="#p_Directory"><span class="contents"> Directory </span> </a></li>
+<li style="margin-left: 30"><a href="#p_File"><span class="contents"> File </span> </a></li>
+<li style="margin-left: 30"><a href="#p_Class_File"><span class="contents"> Class File </span> </a></li>
+
+<li style="margin-left: 15"><a href="#p_Logging"><span class="contents"> Logging </span> </a></li>
+
+<li style="margin-left: 15"><span class="contents"> Sockets </span></li>
+<li style="margin-left: 30"><a href="#p_TCP_Socket"><span class="contents"> TCP Socket </span> </a></li>
+<li style="margin-left: 30"><a href="#p_UDP_Socket"><span class="contents"> UDP Socket </span> </a></li>
+
+<li style="margin-left: 15"><a href="#p_DNS"><span class="contents"> DNS </span> </a></li>
+
+<li style="margin-left: 15"><a href="#p_Timer"><span class="contents"> Timer </span> </a></li>
+
+<li style="margin-left: 15"><a href="#p_Thread"><span class="contents"> Thread </span> </a></li>
+
+<li style="margin-left: 15"><span class="contents"> Pools </span></li>
+<li style="margin-left: 30"><a href="#p_Pool"><span class="contents"> Pool </span> </a></li>
+<li style="margin-left: 30"><a href="#p_SynchPool"><span class="contents"> Synch Pool </span> </a></li>
+<li style="margin-left: 30"><a href="#p_Queue_Pool"><span class="contents"> Queue Pool </span> </a></li>
+<li style="margin-left: 30"><a href="#p_Message_Pool"><span class="contents"> Message Pool </span> </a></li>
+
+<li style="margin-left: 15"><span class="contents"> Network Data and Thread</span></li>
+<li style="margin-left: 30"><a href="#p_Base_Packet"><span class="contents"> Base Packet </span> </a></li>
+<li style="margin-left: 30"><a href="#p_TCP_Packet"><span class="contents"> TCP Packet </span> </a></li>
+<li style="margin-left: 30"><a href="#p_WS_Packet"><span class="contents"> WS Packet </span> </a></li>
+<li style="margin-left: 30"><a href="#p_HTTP_Packet"><span class="contents"> HTTP Packet </span> </a></li>
+<li style="margin-left: 30"><a href="#p_TCP_Client"><span class="contents"> TCP Client</span> </a></li>
+<li style="margin-left: 30"><a href="#p_WS_Client"><span class="contents"> WS Client </span> </a></li>
+<li style="margin-left: 30"><a href="#p_HTTP_Client"><span class="contents"> HTTP Client </span> </a></li>
+<li style="margin-left: 30"><a href="#p_Packet_Thread"><span class="contents"> Thread for event handling</span> </a></li>
+<li style="margin-left: 30"><a href="#p_JSON"><span class="contents"> JSON</span> </a></li>
+<li style="margin-left: 30"><a href="#p_CSV"><span class="contents"> CSV</span> </a></li>
+</ul>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Introduction"></a>
+<center><span class="caption">Introduction</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZET-WEB is the library for developing of Internet services (http, websocket, tcp protocols).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZET-WEB is implemented in threads and it uses libevent and OpenSSL libraries.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;How to compile and install library see ReadMe.txt. How to use the library see HowTo.html and /example/. You can use
+ZET-WEB (not as the library) but as a part of your code(use your Makefile).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The library includes: strings, mutexes, threads, sockets, operations with the file system, classes for working with network objects (nttp, sun, tcp) and a thread for event processing, etc.
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_String"></a>
+<center><span class="caption">String</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;String provides interfaces for operations with std::string and end chars * objects.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions are defined in zString.h file and in ZNSTR namespace.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string encode_base64(const std::string &str, bool app_eol = true);</span><br>
+<span class="ifc">std::string decode_base64(const std::string &str);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions encode/decode string str.<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If app_eol == true the '\n' is added to the end of return string.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string toUpper(const char* p, size_t len);</span><br>
+<span class="ifc">std::string toUpper(const std::string &s);</span><br>
+<span class="ifc">void setUpper(std::string &s, size_t start_pos=0, size_t num=std::string::npos);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions convert characters to uppercase.<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t len - length p.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t start_pos - first position in s, size_t num - number of characters for translation.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string toLower(const char* p, size_t len);</span><br>
+<span class="ifc">std::string toLower(const std::string &s);</span><br>
+<span class="ifc">void setLower(std::string &s, size_t start_pos=0, size_t num=std::string::npos);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions convert characters to lowercase.<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t len - length p.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t start_pos - first position in s, size_t num - number of characters for translation.
+<br><br>
+</div>
+ 
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string str2hex(const char* p, size_t len);</span><br>
+<span class="ifc">std::string str2hex(const std::string &s);</span><br>
+<span class="ifc">std::string hex2str(const char* p, size_t len);</span><br>
+<span class="ifc">std::string hex2str(const std::string &s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions encode/decode string from/to hex format.<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t len - length p.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string escape(const char* p, size_t len);</span><br>
+<span class="ifc">std::string escape(const std::string &s);</span><br>
+<span class="ifc">std::string unescape(const char* p, size_t len);</span><br>
+<span class="ifc">std::string unescape(const std::string &s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL escape/unescape (or encode/decode) string from/to url format.<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t len - length p.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string trim(const std::string &s, const std::string &q=&quot; \t\v\r\n&quot;);</span><br>
+<span class="ifc">void shrink(std::string &s, const std::string &q=&quot; \t\v\r\n&quot;);</span><br>
+<span class="ifc">std::string ltrim(const std::string &s, const std::string &q=&quot; \t\v\r\n&quot;);</span><br>
+<span class="ifc">void lshrink(std::string &s, const std::string &q=&quot; \t\v\r\n&quot;);</span><br>
+<span class="ifc">std::string rtrim(const std::string &s, const std::string &q=&quot; \t\v\r\n&quot;);</span><br>
+<span class="ifc">void rshrink(std::string &s, const std::string &q=&quot; \t\v\r\n&quot;);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Function removes defined in std::string &q characters from both(left/right) sides of a string.<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions trim return new string, shrink set result into std::string &s.
+<br><br>
+</div> 
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string replace(const std::string &src,const std::string &val,const std::string &dest);</span><br>
+<span class="ifc">void substitute(std::string &src,const std::string &val,const std::string &dest);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strings val is replaced by dest in strings src.<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Function replace returns new string, substitute sets result into std::string &src.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::vector&lt;std::string&gt; split(const std::string &src,const std::string &r);</span><br>
+<span class="ifc">size_t split(std::vector&lt;std::string&gt;& ret, const std::string &src,const std::string &r);</span><br>
+<span class="ifc">size_t split(std::list&lt;std::string&gt;& ret, const std::string &src,const std::string &r);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions split string src by string r.<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions return result into ret or as vector.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string toString(short value);</span><br>
+<span class="ifc">std::string toString(unsigned short value);</span><br>
+<span class="ifc">std::string toString(int value);</span><br>
+<span class="ifc">std::string toString(unsigned value);</span><br>
+<span class="ifc">std::string toString(longlong value);</span><br>
+<span class="ifc">std::string toString(ulonglong value);</span><br>
+<span class="ifc">std::string toString(float value);</span><br>
+<span class="ifc">std::string toString(double value);</span><br>
+<span class="ifc">std::string toString(long double value);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions return a string with the representation of value.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">char asChar(const char* p, size_t len, char def='\x00');</span><br>
+<span class="ifc">char toChar(const std::string &src, char def='\x00');</span><br>
+<span class="ifc">unsigned char asUnsignedChar(const char* p, size_t len,unsigned char def='\x00');</span><br>
+<span class="ifc">unsigned char toUnsignedChar(const std::string &src, unsigned char def='\x00');</span><br>
+<span class="ifc">short asShort(const char* p, size_t len, short def=0);</span><br>
+<span class="ifc">short toShort(const std::string &src, short def=0);</span><br>
+<span class="ifc">unsigned short asUnsignedShort(const char* p, size_t len, unsigned short def=0);</span><br>
+<span class="ifc">unsigned short toUnsignedShort(const std::string &src, unsigned short def=0);</span><br>
+<span class="ifc">int asInt(const char* p, size_t len, int def=0);</span><br>
+<span class="ifc">int toInt(const std::string &src, int def=0);</span><br>
+<span class="ifc">unsigned asUnsigned(const char* p, size_t len, unsigned def=0);</span><br>
+<span class="ifc">unsigned toUnsigned(const std::string &src, unsigned def=0);</span><br>
+<span class="ifc">long asLong(const char* p, size_t len, long def=0);</span><br>
+<span class="ifc">long toLong(const std::string &src, long def=0);</span><br>
+<span class="ifc">unsigned long asUnsignedLong(const char* p, size_t len, unsigned long def=0);</span><br>
+<span class="ifc">unsigned long toUnsignedLong(const std::string &src, unsigned long def=0);</span><br>
+<span class="ifc">longlong asLongLong(const char* p, size_t len, longlong def=0);</span><br>
+<span class="ifc">longlong toLongLong(const std::string &src, longlong def=0);</span><br>
+<span class="ifc">ulonglong asULongLong(const char* p, size_t len, ulonglong def=0);</span><br>
+<span class="ifc">ulonglong toULongLong(const std::string &src, ulonglong def=0);</span><br>
+<span class="ifc">float asFloat(const char* p, size_t len, float def=0);</span><br>
+<span class="ifc">float toFloat(const std::string &src, float def=0);</span><br>
+<span class="ifc">double asDouble(const char* p, size_t len, double def=0);</span><br>
+<span class="ifc">double toDouble(const std::string &src, double def=0);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions try to convert string into a number. Number def is returned if error occurs.<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t len - length p.
+<br><br>
+</div> 
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string toHex(short value);</span><br>
+<span class="ifc">std::string toHex(unsigned short value);</span><br>
+<span class="ifc">std::string toHex(int value);</span><br>
+<span class="ifc">std::string toHex(unsigned value);</span><br>
+<span class="ifc">std::string toHex(longlong value);</span><br>
+<span class="ifc">std::string toHex(ulonglong value);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions return a hex string with the representation of value.
+<br><br>
+</div>
+ 
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">char asChar16(const char* p, size_t len, char def='\x00');</span><br>
+<span class="ifc">char toChar16(const std::string &src, char def='\x00');</span><br>
+<span class="ifc">unsigned char asUnsignedChar16(const char* p, size_t len,unsigned char def='\x00');</span><br>
+<span class="ifc">unsigned char toUnsignedChar16(const std::string &src, unsigned char def='\x00');</span><br>
+<span class="ifc">short asShort16(const char* p, size_t len, short def=0);</span><br>
+<span class="ifc">short toShort16(const std::string &src, short def=0);</span><br>
+<span class="ifc">unsigned short asUnsignedShort16(const char* p, size_t len, unsigned short def=0);</span><br>
+<span class="ifc">unsigned short toUnsignedShort16(const std::string &src, unsigned short def=0);</span><br>
+<span class="ifc">int asInt16(const char* p, size_t len, int def=0);</span><br>
+<span class="ifc">int toInt16(const std::string &src,int def=0);</span><br>
+<span class="ifc">unsigned asUnsigned16(const char* p, size_t len, unsigned def=0);</span><br>
+<span class="ifc">unsigned toUnsigned16(const std::string &src, unsigned def=0);</span><br>
+<span class="ifc">long asLong16(const char* p, size_t len, long def=0);</span><br>
+<span class="ifc">long toLong16(const std::string &src, long def=0);</span><br>
+<span class="ifc">unsigned long asUnsignedLong16(const char* p, size_t len, unsigned long def=0);</span><br>
+<span class="ifc">unsigned long toUnsignedLong16(const std::string &src, unsigned long def=0);</span><br>
+<span class="ifc">longlong asLongLong16(const char* p, size_t len, longlong def=0);</span><br>
+<span class="ifc">longlong toLongLong16(const std::string &src, longlong def=0);</span><br>
+<span class="ifc">ulonglong asULongLong16(const char* p, size_t len, ulonglong def=0);</span><br>
+<span class="ifc">ulonglong toULongLong16(const std::string &src, ulonglong def=0);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functions try to convert hex string into a number. Number def is returned if error occurs.<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t len - length p.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">char get();</span><br>
+<span class="ifc">void put(const std::string &v);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Function get reads one bite from console.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Function put writes string v to console.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">unsigned CRC32(const std::string &q, unsigned ini = 0xFFFFFFFF);</span><br>
+<span class="ifc">bool checkCRC(const std::string &q,const unsigned &crc, unsigned ini = 0xFFFFFFFF);</span><br>
+<span class="ifc">ulonglong CRC64(const std::string &q, ulonglong ini = __UINT64_C(0xFFFFFFFFFFFFFFFF));</span><br>
+<span class="ifc">bool checkCRC64(const std::string &q, const ulonglong &crc, ulonglong ini = __UINT64_C(0xFFFFFFFFFFFFFFFF));</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CRC32 counts CRC32 for string q, ini - initial value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;checkCRC checks CRC32 for string q with unsigned crc, ini - initial value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CRC64 counts CRC64 for string q, ini - initial value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;checkCRC64 checks CRC64 for string q with ulonglong crc, ini - initial value.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Smart_pointer"></a>
+<center><span class="caption">template &lt; class T &gt; class zSmart</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zSmart object manages the storage of a pointer, providing a limited garbage-collection facility, 
+possibly sharing that management with other objects.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Objects of zSmart types have the ability of taking ownership of a pointer and share 
+that ownership: once they take ownership, the group of owners of a pointer become responsible for its deletion 
+when the last one of them releases that ownership.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zSmart(T* src=NULL);</span><br>
+<span class="ifc">zSmart(const zSmart &src);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The object owns src, setting the use count to one.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Copy constructor. The object shares ownership of src's assets and increases the use count.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zSmart& operator=(const zSmart &src);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The copy assignments adds the object as a shared owner of src's assets, increasing their use_count.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual ~zSmart();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If use_count is 1 (i.e., the object is the unique owner of the managed pointer): the object pointed by its owned pointer is deleted.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">T* operator-&gt;();</span><br>
+<span class="ifc">const T* operator-&gt;() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns a pointer to the object pointed by the stored pointer in order to access one of its members.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">T* operator*();</span><br>
+<span class="ifc">const T* operator*() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns a pointer to the object pointed by the stored pointer.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int use_count() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the number of zSmart objects that share ownership over the same pointer as this object (including it).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void reset();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The object becomes empty (as if default-constructed).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void swap(zSmart &src)</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  Exchanges the contents of the zSmart object with those of src,
+ transferring ownership of any managed object between them
+ without destroying or altering the use count of either.
+<br><br>
+</div>
+ 
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Random"></a>
+<center><span class="caption">class zRandomGenerator</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Objects of zRandomGenerator types allow to produce random numbers.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class are defined in zString.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zRandomGenerator();</span><br>
+<span class="ifc">zRandomGenerator(unsigned seed);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create and initialize random number generator.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The pseudo-random number generator is initialized using the argument passed as seed.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">unsigned rnd();</span><br>
+<span class="ifc">ulonglong rnd_64();</span><br>
+<span class="ifc">double rnd2();</span><br>
+<span class="ifc">double rnd2_64();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rnd returns a pseudo-random integral number in the range between 0 and 256^4-1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rnd_64 returns a pseudo-random integral number in the range between 0 and 256^8-1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rnd2 returns a pseudo-random double number in the range between 0 and 1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rnd2_64 returns a pseudo-random double number in the range between 0 and 1<br>
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Mutex_MutexLock"></a>
+<center><span class="caption">classes zMutex, zMutexLock</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A zMutex is designed to signal when critical sections of code need exclusive access,
+ preventing other threads with the same protection from executing concurrently and access the same memory locations.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A zMutex is a lockable object allows the same thread to acquire multiple levels of ownership over the mutex object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This allows to lock (or try-lock) the mutex object from a thread that is already locking it,
+ acquiring a new level of ownership over the mutex object:
+ the mutex object will actually remain locked owning the thread until its member unlock is called as many times as this level of ownership.<br><br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A zMutexLock is an object that manages a mutex object by keeping it always locked.<br>
+On construction, the mutex object is locked by the calling thread, and on destruction, the mutex is unlocked.
+ It is the simplest lock, and is specially useful as an object with automatic duration that lasts until the end of its context.
+ In this way, it guarantees the mutex object is properly unlocked in case an exception is thrown.<br><br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Classes are defined in zMutex.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zMutex();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a lockable object.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool lock() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Blocks zMutex object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Instead lock and unlock methods use zMutexLock object.
+<br><br>
+</div>
+ 
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool lock(time_t timeout) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Tries to block zMutex object during timeout msec.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; If blocking operation is success return true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void unlock() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Unblocks zMutex object.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">explicit zMutexLock(zMutex* m);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Blocks zMutex* m.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">explicit zMutexLock(zMutex* m, int timeout);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tries to block zMutex* m during timeout msec.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual ~zMutexLock();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Unblocks zMutex object.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool zMutexLock::operator!() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Return true if mutex is not blocked, false otherwise.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_RWMutex_RWMutexLock"></a>
+<center><span class="caption">classes zRWMutex, zRWMutexLock</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A zRWMutex is designed to signal when critical sections of code need two types of access: read and write.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The write is exclusive access for every thread. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The read allows to have access for multiple threads. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A zRWMutex is a lockable object allows the same thread to acquire multiple levels of ownership over the mutex object.<br><br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A zRWMutexLock is an object that manages a mutex object by keeping it always locked.<br>
+On construction, the mutex object is locked by the calling thread, and on destruction, the mutex is unlocked.
+ It is the simplest lock, and is specially useful as an object with automatic duration that lasts until the end of its context.
+ In this way, it guarantees the mutex object is properly unlocked in case an exception is thrown.<br><br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Classes are defined in zMutex.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zRWMutex();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a lockable object.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool lock(bool writable=false) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Blocks zRWMutex object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When writable is true then exclusive access for every thread. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When writable is false then access for multiple threads. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Instead lock and unlock methods use zRWMutexLock object.
+<br><br>
+</div>
+ 
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void unlock(bool writable=false) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Unblocks zRWMutex object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; writable is the same as in the lock function.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">explicit zRWMutexLock(zRWMutex* m, bool writable=false);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Blocks zRWMutex* m.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When writable is true then exclusive access for every thread. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When writable is false then access for multiple threads.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual ~zRWMutexLock();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Unblocks zRWMutex object.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Directory"></a>
+<center><span class="caption">Directory</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Functions provides interfaces to operate on directories.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Functions are defined in zFile.h file and in ZNDIR namespace.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool create(const std::string &path);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates path directory.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool erase(const std::string &path);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removes path directory.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if path directory was removed, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool check(const std::string &path);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if path directory was found, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::vector&lt;std::string&gt; roll(const std::string &path);</span><br>
+<span class="ifc">bool roll(std::vector&lt;std::string&gt;& ret, const std::string &path);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns list of subdirectories for path directory.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_File"></a>
+<center><span class="caption">File</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Functions provides interfaces to operate on files.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Functions are defined in zFile.h file and in ZNFILE namespace.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool create(const std::string &path);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates path file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool erase(const std::string &path);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removes path file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if path file was removed, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool rename(const std::string &oldpath, const std::string &newpath);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Renames oldpath file to newpath.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool copy(const std::string &oldpath, const std::string &newpath);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Copies oldpath file to newpath.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool move(const std::string &oldpath, const std::string &newpath);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Moves oldpath file to newpath.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool check(const std::string &path);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if path file was found, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::vector&lt;std::string&gt; roll(const std::string &path);</span><br>
+<span class="ifc">bool roll(std::vector&lt;std::string&gt;& ret, const std::string &path);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns list of files for path directory.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">longlong size(const std::string &path);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns size of path file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns -1 if file is not found.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ZFINFO info(const std::string &path);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns struct ZFINFO for path file.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class ZFINFO<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ulonglong size; // size of file in bytes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time_t accessed; // last time of access to file<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time_t modified; // last time of modify<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time_t created; // time of create file<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bool read; // can read<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bool write; // can write<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bool exec; //  can execute<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int user; // user owner<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int group; // user group<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool read(std::string &ret,const std::string &path,ulonglong start=0,size_t number=std::string::npos);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reads from path file starting from start position and number bytes or to the end of file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool rewrite(const std::string &path,const std::string &buf);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rewrites path file by string buf.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t write(const std::string &path,const std::string &buf,ulonglong start=zFile::npos);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Writes buf to path file starting from start position.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Class_File"></a>
+<center><span class="caption">class zFile</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zFile provides interfaces to operate on files.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zFile object are associated with files either on construction, or by calling member open.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class is defined in zFile.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">explicit zFile(const std::string &path="", bool writable=true);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Opens path file if file is exist.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If writable is true read and write operations are accessable, if writable is false only read.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool open(const std::string &path, bool writable=true);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tries to reopen path file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If path file is not found the old file stay alive.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual  bool alive() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If file is open return true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">longlong size();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns size of file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns -1 if file is not open.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool read(std::string& ret,ulonglong start=0, size_t number=std::string::npos) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reads starting from start position and number bytes or to the end of file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual size_t write(const std::string &buf,ulonglong start=zFile::npos) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Writes buf to file starting from start position.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void close() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Closes file.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Logging"></a>
+<center><span class="caption">class zLog</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zLog provides interfaces for logging.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class is defined in zLog.h file.<br><br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Options for working with logs are defined in zPaths.h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #008000; white-space: nowrap"> #define ZLOG_PATH "./log.txt" // path to log file.</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #008000; white-space: nowrap"> #define ZLOG_SYNC true  // kind of writing into the log file.</span><br><br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;You can set the following levels of logging (in descending order of priority):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ifc">zLog::Log.m_level= ZLOG_INFO;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ifc">zLog::Log.m_level= ZLOG_WARN;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ifc">zLog::Log.m_level= ZLOG_ERROR;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ifc">zLog::Log.m_level= ZLOG_DEBUG;</span><br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+To write log use the following macroses (zLog.h):<br><br>
+
+<span class="ifc">LOG_PRINT_INFO(log_namespase, message)</span><br>
+<span class="ifc">LOG_PRINT_WARN(log_namespase, message)</span><br>
+<span class="ifc">LOG_PRINT_ERROR(log_namespase, message)</span><br>
+<span class="ifc">LOG_PRINT_DEBUG(log_namespase, message)</span><br><br>
+
+<span class="ifc">log_namespase</span> - logging subject.<br>
+<span class="ifc"> message</span> - log message.<br><br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#define LOG_PRINT_INFO(log_namespase, message) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if(ZLOG_INFO <= zLog::Log.m_level) { zLog::Log.print(ZLOG_INFO, log_namespase, message); }<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#define LOG_PRINT_WARN(log_namespase, message)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if(ZLOG_WARN <= zLog::Log.m_level) { zLog::Log.print(ZLOG_WARN, log_namespase, message); }<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#define LOG_PRINT_ERROR(log_namespase, message)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if(ZLOG_ERROR <= zLog::Log.m_level) { zLog::Log.print(ZLOG_ERROR, log_namespase, message); }<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#define LOG_PRINT_DEBUG(log_namespase, message)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if(ZLOG_DEBUG <= zLog::Log.m_level) { zLog::Log.print(ZLOG_DEBUG, log_namespase, message); }<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void zLog::Log.update();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If ZLOG_SYNC is set to true you must periodically (in the main thread) call zLog::Log.update();<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This function writes log from the buffer to a file.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void rotate() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rotates log file ./log.txt to ./year_mon_day_hour_min_sec_log.txt
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_TCP_Socket"></a>
+<center><span class="caption">TCP Socket</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Functions provides interfaces to operate on tcp sockets (IPV4 and IPV6) and ssl api.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Functions are defined in zSocket.h file and in ZNSOCKET namespace.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void sleep(unsigned timeout);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sleeps timeout microseconds.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string host(const std::string &addr);</span><br>
+<span class="ifc">std::string host6(const std::string &addr);</span><br>
+<span class="ifc">size_t host(std::vector&lt;std::string&gt;& ret, const std::string &addr);</span><br>
+<span class="ifc">size_t host6(std::vector&lt;std::string&gt;& ret, const std::string &addr);</span><br>
+<span class="ifc">size_t host(std::list&lt;std::string&gt;& ret, const std::string &addr);</span><br>
+<span class="ifc">size_t host6(std::list&lt;std::string&gt;& ret, const std::string &addr);</span><br>
+<span class="ifc">size_t resolve(std::vector&lt;std::string&gt;& ret4, std::vector&lt;std::string&gt;& ret6, const std::string &addr);</span><br>
+<span class="ifc">size_t resolve(std::vector&lt;std::string&gt;& ret4, std::vector&lt;std::string&gt;& ret6, const std::string &addr);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves host information corresponding to a host name or ip address from a host database.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; host - ipv4, host6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int socket(const std::string& adr,unsigned short port, bool blocking=false, unsigned timeout=6000);</span><br>
+<span class="ifc">int socket6(const std::string& adr,unsigned short port, bool blocking=false, unsigned timeout=6000);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a tcp socket and connects its to the specified address and port.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blocking define blocking mode of socket, timeout is maximum specified timeout value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If error function returns -1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket - ipv4, socket6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int async_socket(const std::string& adr,unsigned short port);</span><br>
+<span class="ifc">int async_socket6(const std::string& adr,unsigned short port);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a non_blocking tcp socket and try to connect its to the specified address and port.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Check the result of connect by the function ZNSOCKET::async_select(int s);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If error function returns -1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;async_socket - ipv4, async_socket6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int async_select(int s, unsigned timeout=0);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tests the result of connect. See ZNSOCKET::async_socket(const std::string& adr,unsigned short port);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Return: -1 - connection fault, 0 - in progress, 1 - success.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int server(const std::string& adr,unsigned short port, int backlog=1024, bool blocking=false);</span><br>
+<span class="ifc">int server6(const std::string& adr,unsigned short port, int backlog=1024, bool blocking=false);</span><br>
+<span class="ifc">int server(unsigned short port, int backlog=1024, bool blocking=false);</span><br>
+<span class="ifc">int server6(unsigned short port, int backlog=1024, bool blocking=false);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a server socket with the specified port, listen backlog, blocking mode, and local IP address(or all interfaces) to bind to.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If error function returns -1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server - ipv4, server6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool alive(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tests if the socket s is alive.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void close(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Closes socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int accept(int s, unsigned tm, bool blocking);</span><br>
+<span class="ifc">int accept(int s, bool blocking=false);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Listens to s server socket with timeout tm or less to return socket in blocking mode.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t read(int s, std::string &ret);</span><br>
+<span class="ifc">ssize_t read(int s, std::string &ret, char* r, size_t len);</span><br>
+<span class="ifc">ssize_t read(int s, std::string &ret, char r[65536]);</span><br>
+<span class="ifc">ssize_t read(int s, char* ret, size_t len);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reads in ret buffer with timeout=0 from the socket and returns the number of read bytes.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If socket is corrupted the function returns -1. 
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t write(int s, const std::string &v, size_t pos=0);</span><br>
+<span class="ifc">ssize_t pass(int s, const char* v, size_t len);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Writes with timeout=0 string (char*) v starting pos to the socket.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the number of written bytes. If socket is corrupted the function returns -1. 
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t send(int s,const std::string &v, size_t pos=0);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Writes string v starting pos to the socket.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the number of written bytes when string v have been sent wholly. If socket is corrupted the function returns -1.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int family(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the family of the socket (AF_INET or AF_INET6).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string getAddress(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the local address of the socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">unsigned getPort(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the port on which this socket is listening.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string getPeerAddress(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the peer address of the socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">unsigned getPeerPort(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the peer port of the socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">unsigned getReceiveBufferSize(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gets the value of the SO_RCVBUF option for this Socket, that is the buffer size used by the platform for input on this Socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">unsigned getSendBufferSize(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gets value of the SO_SNDBUF option for this Socket, that is the buffer size used by the platform for output on this Socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">unsigned setReceiveBufferSize(int s, unsigned size);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets the SO_RCVBUF option to the specified value for this Socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">unsigned setSendBufferSize(int s, unsigned size);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets the SO_SNDBUF option to the specified value for this Socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void block(int s, bool blocking);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets the blocking mode for the socket s.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void select(const std::vector&lt;int&gt;& src, std::vector&lt;int&gt;& rd, std::vector&lt;int&gt;& wr, std::vector&lt;int&gt;& ex, unsigned timeout=0, int rwe=(ZNSOCKET::SELECT_READ | ZNSOCKET::SELECT_EXCEPT));</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tests read,write and except for sockets.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const int SELECT_READ=1; - specifies a read test.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const int SELECT_WRITE=2; - specifies a write test.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const int SELECT_EXCEPT=4; - specifies a except test.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src - list of sockets for test; rd, wr, ex - result lists of read, write, except sockets;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">SSL_CTX* server_ctx(const std::string& server_cert_file,const std::string& server_key_file, const SSL_METHOD* method= ::SSLv23_server_method());</span><br>
+<span class="ifc">SSL_CTX* client_ctx(const SSL_METHOD* method= ::SSLv23_client_method());</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets certificate and private key to the ssl server side initializing SSL_CTX* structure.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates SSL_CTX* structure to the ssl client side initializing.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int handle(SSL* s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns socket handle which has been coupled with SSL structure.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">SSL* socket(int h,SSL_CTX* client_ctx);</span><br>
+<span class="ifc">SSL* server(int h,SSL_CTX* server_ctx);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns pointer to a SSL structure which is coupled with h socket handle.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;First function creates SSL structure for client side, second for server side.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t connect(SSL* s, unsigned tm=0);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Start ssl handshake on client side with timeout tm.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If function returns -1 the connection fails. If function returns 0 it needs to continue doing attempts later.
+ If function returns 1 then the TLS/SSL handshake was successfully completed, a TLS/SSL connection has been established.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t accept(SSL* s, unsigned tm=0);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Start ssl handshake on server side with timeout tm.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If function returns -1 the connection fails. If function returns 0 it needs to continue doing attempts later.
+ If function returns 1 then the TLS/SSL handshake was successfully completed, a TLS/SSL connection has been established.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t read(SSL* s, std::string &ret);</span><br>
+<span class="ifc">ssize_t read(SSL* s, std::string &ret, char* r, size_t len);</span><br>
+<span class="ifc">ssize_t read(SSL* s, std::string &ret, char r[65536]);</span><br>
+<span class="ifc">ssize_t read(SSL* s, char* ret, size_t len);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reads in ret buffer with timeout=0 from the SSL structure and returns the number of read bytes.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If SSL structure is corrupted the function returns -1. 
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t write(SSL* s, const std::string &v,size_t pos=0);</span><br>
+<span class="ifc">ssize_t pass(SSL* s, const char* v, size_t len);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Writes with timeout=0 string (char*) v starting pos to the SSL structure.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the number of written bytes. If SSL structure is corrupted the function returns -1. 
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t send(SSL* s,const std::string &v,size_t pos=0);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Writes string v starting pos to the SSL structure.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the number of written bytes when string v have been sent wholly. If SSL structure is corrupted the function returns -1.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void close(SSL* s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Closes SSL* s structure.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void free(SSL* s);</span><br>
+<span class="ifc">void free(SSL_CTX* s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Destroys SSL* or SSL_CTX* structures.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_UDP_Socket"></a>
+<center><span class="caption">UDP Socket</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Functions provides interfaces to operate on udp sockets.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Functions are defined in zSocket.h file and in ZNUDP namespace.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string net_to_host(unsigned n);</span><br>
+<span class="ifc">unsigned host_to_net(const std::string& src);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Converts ip address from numeric to host and back.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string host(const std::string &addr);</span><br>
+<span class="ifc">std::string host6(const std::string &addr);</span><br>
+<span class="ifc">size_t host(std::vector&lt;std::string&gt;& ret, const std::string &addr);</span><br>
+<span class="ifc">size_t host6(std::vector&lt;std::string&gt;& ret, const std::string &addr);</span><br>
+<span class="ifc">size_t host(std::list&lt;std::string&gt;& ret, const std::string &addr);</span><br>
+<span class="ifc">size_t host6(std::list&lt;std::string&gt;& ret, const std::string &addr);</span><br>
+<span class="ifc">size_t resolve(std::vector&lt;std::string&gt;& ret4, std::vector&lt;std::string&gt;& ret6, const std::string &addr);</span><br>
+<span class="ifc">size_t resolve(std::vector&lt;std::string&gt;& ret4, std::vector&lt;std::string&gt;& ret6, const std::string &addr);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves host information corresponding to a host name or ip address from a host database.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; host - ipv4, host6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int socket(const std::string& adr,unsigned short port, bool blocking=false);</span><br>
+<span class="ifc">int socket6(const std::string& adr,unsigned short port, bool blocking=false);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a udp socket and connects it to the specified port at the specified address in blocking mode.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket - ipv4, socket6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int server(const std::string& adr,unsigned short port, bool blocking=false);</span><br>
+<span class="ifc">int server6(const std::string& adr,unsigned short port, bool blocking=false);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a server socket with the specified port, local IP address and blocking mode to bind to.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server - ipv4, server6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool alive(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tests if socket is alive.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void close(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Closes socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t read(int s, unsigned& adr, unsigned short& port, std::string &ret);</span><br>
+<span class="ifc">ssize_t read(int s, unsigned& adr, unsigned short& port, std::string &ret, char rv[65536]);</span><br>
+<span class="ifc">ssize_t read(int s, unsigned& adr, unsigned short& port, char* ret, size_t len);</span><br>
+<span class="ifc">ssize_t read6(int s, struct in6_addr& adr, unsigned short& port, std::string &value);</span><br>
+<span class="ifc">ssize_t read6(int s, struct in6_addr& adr, unsigned short& port, std::string &ret, char rv[65536]);</span><br>
+<span class="ifc">ssize_t read6(int s, struct in6_addr& adr, unsigned short& port, char* ret, size_t len);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reads in ret buffer with timeout=0 from the socket and returns the number of read bytes.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If socket is corrupted the function returns -1.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read - ipv4, read6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t write(int s, unsigned adr,unsigned short port, const std::string &v, size_t pos=0);</span><br>
+<span class="ifc">ssize_t pass(int s, unsigned adr,unsigned short port, const char* v, size_t len);</span><br>
+<span class="ifc">ssize_t write6(int s, const struct in6_addr& adr,unsigned short port, const std::string &v, size_t pos=0);</span><br>
+<span class="ifc">ssize_t pass6(int s, const struct in6_addr& adr,unsigned short port, const char* v, size_t len);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Writes with timeout=0 string (char*) v starting pos to the adr and port.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the number of written bytes. If socket is corrupted the function returns -1.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write, pass - ipv4, write6, pass6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">ssize_t write(int s, const std::string &v, size_t pos=0);</span><br>
+<span class="ifc">ssize_t pass(int s, const char* v, size_t len);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Writes with timeout=0 string (char*) v starting pos. Socket must be connected.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the number of written bytes. If socket is corrupted the function returns -1. 
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">int family(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the family of the socket (AF_INET or AF_INET6).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string getAddress(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the local address of the socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">unsigned getPort(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the port on which this socket is listening.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string getPeerAddress(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the peer address of the socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">unsigned getPeerPort(int s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the peer port of the socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void block(int s, bool blocking);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets the blocking mode for the socket s.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_DNS"></a>
+<center><span class="caption">class zDNS</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zDNS provides interfaces to operate with resolving of domain names.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;It is possible to operate only with a static member of the class through static functions.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zDNS are defined in zDNS.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static time_t getPeriod();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the period (in seconds) of updating the list of domain names and ip addresses.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #008000; white-space: nowrap"> #define ZDNS_PERIOD 3600 </span> //default period (in seconds) of updating.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static void setPeriod(time_t period);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets the period (in seconds) of updating the list of domain names and ip addresses.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #008000; white-space: nowrap"> #define ZDNS_PERIOD 3600 </span> //default period (in seconds) of updating.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static std::string host(const std::string &adr);</span><br>
+<span class="ifc">static size_t host(std::vector&lt;std::string&gt;& ret, const std::string &adr);</span><br>
+<span class="ifc">static std::string host6(const std::string &adr);</span><br>
+<span class="ifc">static size_t host6(std::vector&lt;std::string&gt;& ret, const std::string &adr);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves host information corresponding to a host name or ip address from a host database.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;host - ipv4, host6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static bool erase(const std::string &addr);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removes host addr from a host database.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static void clear();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Clears host database.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static bool check(const std::string &addr);</span><br>
+<span class="ifc">static bool check6(const std::string &addr);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if host addr is found in host database, false otherwise.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check - ipv4, check6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static size_t size();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns size of host database.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static void getValue(std::set&lt;std::string&gt;& ret);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns list of hosts stored in database.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static void update();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;It needs periodically (in the main thread) to call zDNS::update().<br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This function updates all hosts stored in database.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Timer"></a>
+<center><span class="caption">class zTimer</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zTimer provides interfaces to operate with time in milliseconds.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zTimer are defined in zThread.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static time_t now();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns ::time(NULL) - current time.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zTimer();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates and initializes timer.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">void reset();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reinitializes timer. 
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">time_t get() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns time (in milliseconds) from the creation of the object.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool check(time_t timeout) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tests if timeout (in milliseconds) less or equal then time(in milliseconds) from the creation of the object.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Thread"></a>
+<center><span class="caption">class zThread</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zThread class to represent individual threads of execution.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A thread of execution is a sequence of instructions that can be executed concurrently with other
+ such sequences in multithreading environments, while sharing a same address space.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zThread are defined in zThread.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zThread(const std::string &nm="");</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates and initializes thread object with name nm.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void run() = 0;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; must be redefined to define thread execution.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool testStop() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; must (or can) be used in run() to check the 'stop' notification.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static zThread* currentThread();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns pointer to zThread object of 'current' thread.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Can return NULL, if current thread wasn't created through zThread interface.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static size_t size();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns number of threads created through zThread interface.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static std::vector&lt;zThread*&gt; getThreadList();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns list of pointers to zThread object created through zThread interface.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static void sleep(time_t timeout);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sleeps timeout milliseconds.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static void stopAll();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Notifies all zThread's threads to end execution.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static void joinAll();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Waits, until all zThread's threads end execution.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static size_t getPid();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves the process identifier of the calling process.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static size_t getTid();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the thread identifier of the calling thread.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void destroy();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Destroys thread. 1.stop(), 2.join(), 3.terminate.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual ~zThread();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Destructor. 1.stop(), 2.join(), 3.terminate.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual std::string getName() const;</span><br>
+<span class="ifc">virtual void setName(const std::string &q);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gets/Sets current name of thread.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual size_t Pid() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the thread identifier.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual int getPriority() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns current priority of the thread.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void setPriority(int new_priority);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets new priority of the thread.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool isAlive() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tests running the thread or not.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool isDaemon() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tests running the thread as daemon.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool isInterrupted() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tests suspendFlag and alive.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void join();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Waits when the thread ends execution.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool join(time_t timeout);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Waits timeout milliseconds or less when thread ends execution.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If thread ends returns true, false otherwise. 
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void setDaemon(bool on = true);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If on is true then thread object will be deleted after stoping.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void start();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Starts the execution of zThread procedure run().
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void stop();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Notifies the thread to end execution. The thread procedure needs to check function testStop() periodically to know about the notification.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void suspend();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Suspends the thread execution.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void resume();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Resumes the thread execution after suspend().
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Pool"></a>
+<center><span class="caption">template&lt; class T &gt; class zPool</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zPool class is object pool container.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zPool is not thread safe.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zPool are defined in zPool.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zPool();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates pool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual ~zPool();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes all objects in the pool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual T* create()= 0;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a new object and returns a pointer to it or NULL.
+ The function is called when all objects in the pool are used.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void destroy();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes all objects in the pool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable std::list&lt;T*&gt; mtp_storage;</span><br>
+<span class="ifc">mutable std::set&lt;T*&gt; mtp_value;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The lists of stored objects and used objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual T* get();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns a pointer to new object or NULL.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool push(T* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Moves the used object to the storage.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool drop(T* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes object p.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool check(T* p, bool inuse=true) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if object p is found in pool, false otherwise.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is true, function tries to find in the list of used objects.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is false, function tries to find in the list of stored objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void clear();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes all stored objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual size_t count(bool inuse=true) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is true, function returns the number of used objects.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is false, function returns the number of stored objects.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_SynchPool"></a>
+<center><span class="caption">template&lt; class T &gt; class zSynchPool</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zSynchPool class is object pool container.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zSynchPool is thread safe.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zSynchPool are defined in zPool.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zSynchPool();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates pool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual ~zSynchPool();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes all objects in the pool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual T* create()= 0;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a new object and returns a pointer to it or NULL.
+ The function is called when all objects in the pool are used.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void destroy();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes all objects in the pool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable std::list&lt;T*&gt; mtp_storage;</span><br>
+<span class="ifc">mutable std::set&lt;T*&gt; mtp_value;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The lists of stored objects and used objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual T* get();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns a pointer to new object or NULL.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool push(T* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Moves the used object to the storage.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool drop(T* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes object p.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool check(T* p, bool inuse=true) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if object p is found in pool, false otherwise.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is true, function tries to find in the list of used objects.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is false, function tries to find in the list of stored objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void clear();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes all stored objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual size_t count(bool inuse=true) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is true, function returns the number of used objects.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is false, function returns the number of stored objects.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Queue_Pool"></a>
+<center><span class="caption">template&lt; class T &gt; class zChronoPool</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zChronoPool class is a queue with the logarithmic complexity of adding and removing an object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zChronoPool is not thread safe.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zChronoPool are defined in zPool.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zChronoPool();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates ChronoPool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual T* get();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns and removes from container a pointer to the first element. Returns NULL if size of pool is 0.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual T* front() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns a pointer to the first element. Returns NULL if size of pool is 0.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool set(T* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Adds pointer to the new object in container.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void clear();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removes all pointers to objects from container.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool erase(T* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removes pointer p from container.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool check(T* p) const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if object p is found in container, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool empty() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Test whether container is empty.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual size_t size() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the number of elements in the container.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Message_Pool"></a>
+<center><span class="caption">template&lt; class T &gt; class zMessagePool</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zMessagePool class is container for passing messages between threads.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zMessagePool is thread safe.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zMessagePool are defined in zPool.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zMessagePool();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates MessagePool.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual T* getMessage();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns and removes from container a pointer to the first element. Returns NULL if size of pool is 0.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual T* frontMessage() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns a pointer to the first element. Returns NULL if size of pool is 0.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool setMessage(T* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Adds pointer to the new object in container.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool emptyMessage() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Test whether container is empty.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual size_t sizeMessage() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the number of elements in the container.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Base_Packet"></a>
+<center><span class="caption">class zPacket</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zPacket class is the base class for providing network data, such as: tcp, ws, http (IPV4 and IPV6).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Each zPacket object can belong to the pool, and only through it can be created or deleted.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zPacket are defined in zPacket.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool push();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Moves the used object to the storage.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool drop();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deletes object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If success returns true, false otherwise.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual bool check(bool inuse=true);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if object is found in pool, false otherwise.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is true, function tries to find in the list of used objects.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If inuse is false, function tries to find in the list of stored objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual int family() const;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the family of the socket (AF_INET or AF_INET6).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable zPool&lt;zPacket&gt;* pool;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pool for zPacket objects.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable int sock;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Socket.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable SSL* ssl;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pointer to SSL structure. If ssl is not NULL the encrypted connection is established.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable zPacketThread* parent;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pointer to parent thred.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable zParamPacket* ext;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets additional parameters for the object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Additional parameters are defined in the class inherited from the class zPacketThread.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class zParamPacket<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zParamPacket(zPacket* prn=NULL): parent(prn) {};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; virtual ~zParamPacket();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; virtual void clear()= 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  Must be redifined.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  The function is called when the object is returned to the pool.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mutable zPacket* parent;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  The Pointer to parent object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">template&lt;class T&gt; static T* getParam(zPacket* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tries to cast zParamPacket* ext to T*.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_TCP_Packet"></a>
+<center><span class="caption">class zPacketTCP: public zPacket</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zPacketTCP class provides work with tcp data on the server side.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Each zPacketTCP object belongs to the pool, and only through it can be created or deleted.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zPacketTCP are defined in zPacket.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable int status;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines packet's status.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZTCP_PACKET_INVALID -1 - Invalid state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZTCP_PACKET_EMPTY 0 - OK state;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string str_in;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When message is received in str_in then function onRead(zPacketTCP* p) is called.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string message;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;You can use message to execute messages received in str_in.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string address;</span><br>
+<span class="ifc">unsigned peerport;</span><br>
+<span class="ifc">unsigned port;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address - ip address on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;peerport - peer port(proxy or browser).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port - socket port on which the connection was opened.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t time_out;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines timeout in milliseconds after which the onTimeout(zPacketTCP* p) function will be called in case of no read/write events.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void send(const std::string& msg);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends message msg to client. The message will be queued.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void close();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Closes connection and removes packet.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The function zPacketThread::onClose(zPacketTCP* p) will not be called.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_WS_Packet"></a>
+<center><span class="caption">class zPacketWS: public zPacket</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zPacketWS class provides work with websocket data on the server side.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Each zPacketWS object belongs to the pool, and only through it can be created or deleted.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zPacketWS are defined in zPacket.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static size_t header_max_length;</span><br>
+<span class="ifc">static size_t packet_max_length;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Maximum size of http header and ws body.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable int status;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines packet's status.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZWS_PACKET_INVALID -1 - Invalid state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZWS_PACKET_EMPTY 0 - Initial state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZWS_PACKET_HEADER 1 - Tries to read Header;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZWS_PACKET_ACCEPTED 2 - WS Connection is established;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZWS_PACKET_CLOSED 4 - Connection is closed;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string str_header;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_header is http header with last \r\n\r\n.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string message;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When message is received then function onMessage(zPacketWS* p) is called.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string complete_message;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Can be used to execute fragmented messages.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool fin_flag;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true for complete message;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false for fragmented not last message.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t opcode;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x01 - text message;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x02 - binary message;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x00 - fragmented not first message;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string address;</span><br>
+<span class="ifc">unsigned peerport;</span><br>
+<span class="ifc">std::string host;</span><br>
+<span class="ifc">unsigned port;</span><br>
+<span class="ifc">std::string method;</span><br>
+<span class="ifc">std::string http_version;</span><br>
+<span class="ifc">std::string ws_version;</span><br>
+<span class="ifc">std::string ws_key;</span><br>
+<span class="ifc">std::string path;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string address - ip address on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned peerport - peer port(proxy or browser).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string host - host in http request (for example www.example.com)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned port - socket port on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string method - HTTP method(GET, POST).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string http_version - HTTP version.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string ws_version -WS version.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string ws_key -WS key.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string path - http request path.<br>
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t time_out;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines timeout in milliseconds after which the onTimeout(zPacketWS* p) function will be called in case of no read/write events.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t max_header;</span><br>
+<span class="ifc">size_t max_body;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By default:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_header = zPacketWS::header_max_length;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_header = zPacketWS::header_max_length;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::map&lt;std::string,std::string&gt; head;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEAD of the http message. All names are set to uppercase(UPGRADE: websocket).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void accept(const std::map&lt;std::string, std::string&gt;& add_header=std::map&lt;std::string, std::string&gt;());</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends reply for client to accept connection.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add_header is the additional parameters for header in reply.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void send(const std::string& msg, bool fragmented=false);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends message msg to client, bool fragmented defines the fragmented type of message.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The message will be queued.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void close();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends close message to client and then close connection.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The function zPacketThread::onClose(zPacketWS* p) will be called.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void ping();</span><br>
+<span class="ifc">virtual void pong();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends ping/pong message.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_HTTP_Packet"></a>
+<center><span class="caption">class zPacketHTTP: public zPacket</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zPacketHTTP class provides work with HTTP data on the server side.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Each zPacketHTTP object belongs to the pool, and only through it can be created or deleted.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zPacketHTTP are defined in zPacket.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static size_t header_max_length;</span><br>
+<span class="ifc">static size_t packet_max_length;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Maximum size of http header and body.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable int status;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines packet's status.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHTTP_PACKET_INVALID -1 - Invalid state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHTTP_PACKET_EMPTY 0 - Initial state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHTTP_PACKET_HEADER 1 - Header is read;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHTTP_PACKET_COMPLETE 2 - Request is OK;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string str_header;</span><br>
+<span class="ifc">std::string str_in;</span><br>
+<span class="ifc">std::string str_out;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_header is http header with last \r\n\r\n.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_in is http body.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_out is output buffer.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string address;</span><br>
+<span class="ifc">unsigned peerport;</span><br>
+<span class="ifc">std::string host;</span><br>
+<span class="ifc">unsigned port;</span><br>
+<span class="ifc">std::string version;</span><br>
+<span class="ifc">std::string method;</span><br>
+<span class="ifc">std::string path;</span><br>
+<span class="ifc">std::string content_type;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string address - ip address on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned peerport - peer port(proxy or browser).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string host - host in http request (for example www.example.com).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned port - socket port on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string version - HTTP version.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string method - HTTP method(GET, POST).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string path - http request path.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string content_type - Content-Type from head.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool keep_alive;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Request: if Connection: close (by default) then keep_alive is false, if Connection: keep_alive then keep_alive is true.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reply: if keep_alive is false then the connection will be closed after the response is sent. The connection will stay open if keep_alive is true.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool keep_write;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;After sending the entire message, the connection will not be closed.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;To close the connection it is necessary to write:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p-&gt;keep_write=false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p-&gt;send();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;You can use this option at your own risk.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t time_out;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines timeout in milliseconds after which the onTimeout(zPacketHTTP* p) function will be called in case of no read/write events.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t max_header;</span><br>
+<span class="ifc">size_t max_body;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By default:<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_header = zPacketHTTP::header_max_length;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_body = zPacketHTTP::packet_max_length;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t length;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Length of the message body.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool chunked;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If Transfer-Encoding: chunked then chunked is true, chunked is false in other cases.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::vector&lt;std::pair&lt;longlong, longlong&gt; &gt; ranges;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The list of ranges parsed from Range. If second parameter of a range is undefined it is set to -1.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Range: bytes=7-10, -555, 0- =&gt; std::pair&lt;longlong, longlong&gt;: (7,10), (-555, -1), (0,-1)
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::map&lt;std::string,std::string&gt; head;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEAD of the http message. All names are set to uppercase(CONNECTION: keep_alive).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::map&lt;std::string,std::vector&lt;std::string&gt; &gt; cookie;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The list of cookies: name =&gt; value;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::map&lt;std::string,std::vector&lt;std::string&gt; &gt; param;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTP query parameters (www.example.com/mypath?q1=0&q2=1 param[&quot;q2&quot;][0] is 1).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::map&lt;std::string,std::vector&lt;std::pair&lt;std::string,std::string&gt; &gt; &gt; file;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTP query files (std::map&lt;param name,std::vector&lt;std::pair&lt;file name,file body&gt; &gt; &gt;).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void write(const std::string &src)</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets body reply: str_out+=src;.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void send_empty(const std::string& connection=&quot;close&quot;);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends reply with header: &quot;HTTP/1.1 204 No Content\r\nContent-Type:text/html\r\nContent-Length:0\r\nConnection:&quot;+connection+&quot;\r\n\r\n&quot;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void send_location(const std::string& path, const std::string& connection=&quot;close&quot;);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends reply with header: &quot;HTTP/1.1 302 Moved Temporarily\r\nLocation:&quot;+path+&quot;\r\nContent-Length:0\r\nConnection:&quot;+connection+&quot;\r\n\r\n&quot;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void send_text(const std::string& hdr=&quot;text/html; charset=utf-8&quot;, const std::string& connection=&quot;close&quot;);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends reply with header: &quot;HTTP/1.1 200 OK\r\nContent-Type:&quot;+hdr+&quot;\r\nContent-Length:&quot;+ZNSTR::toString(str_out.size())+&quot;\r\nConnection:&quot;+connection+&quot;\r\n\r\n&quot;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void send(const std::string& hdr=&quot;&quot;);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends reply with http header hdr.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void close();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Closes connection and removes packet.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The function zPacketThread::onClose(zPacketHTTP* p) will not be called.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_TCP_Client"></a>
+<center><span class="caption">class zClientTCP: public zPacket</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zClientTCP class provides work with tcp data on the client side (RESTful).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Each zClientTCP object belongs to the pool, and only through it can be created or deleted.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zClientTCP are defined in zPacket.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable int status;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines packet's status.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZTCP_CLIENT_INVALID -1 - Invalid state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZTCP_CLIENT_EMPTY 0 - Initial state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZTCP_CLIENT_CONNECTED 1 - Connection is established;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string str_in;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When message is received in str_in then function onRead(zClientTCP* p) is called.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string message;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;You can use message to execute messages received in str_in.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string host;</span><br>
+<span class="ifc">std::string address;</span><br>
+<span class="ifc">unsigned peerport;</span><br>
+<span class="ifc">unsigned port;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;host - host on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address - ip address on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;peerport - peer port.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port - socket port on which the connection was opened.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t time_out;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines timeout in milliseconds after which the onTimeout(zClientTCP* p) function will be called in case of no read/write events.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void send(const std::string& msg);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends message msg to server. The message will be queued.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void close();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Closes connection and removes client.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The function zPacketThread::onClose(zClientTCP* p) will not be called.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_WS_Client"></a>
+<center><span class="caption">class zClientWS: public zPacket</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zClientWS class provides work with websocket data on the client side (RESTful).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Each zClientWS object belongs to the pool, and only through it can be created or deleted.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zClientWS are defined in zPacket.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static size_t header_max_length;</span><br>
+<span class="ifc">static size_t packet_max_length;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Maximum size of http header and ws body.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable int status;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines packet's status.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZWS_CLIENT_INVALID -1 - Invalid state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZWS_CLIENT_EMPTY 0 - Initial state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZWS_CLIENT_HEADER 1 - Tries to read Header;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZWS_CLIENT_CONNECTED 2 - WS Connection is established;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZWS_CLIENT_CLOSED 4 - Connection is closed;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string str_header;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_header is http header with last \r\n\r\n.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string message;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When message is received then function onMessage(zClientWS* p) is called.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string complete_message;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Can be used to execute fragmented messages.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool fin_flag;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true for complete message;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false for fragmented not last message.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t opcode;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x01 - text message;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x02 - binary message;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x00 - fragmented not first message;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string address;</span><br>
+<span class="ifc">unsigned peerport;</span><br>
+<span class="ifc">std::string host;</span><br>
+<span class="ifc">unsigned port;</span><br>
+<span class="ifc">std::string http_code;</span><br>
+<span class="ifc">std::string http_version;</span><br>
+<span class="ifc">std::string ws_version;</span><br>
+<span class="ifc">std::string ws_key;</span><br>
+<span class="ifc">std::string path;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address - ip address on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;peerport - peer port.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;host - host in http response (for example www.example.com).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port - socket port on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;http_code - Reply HTTP Status Code.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;http_version - HTTP version.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ws_version -WS version.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ws_key -WS key.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path - http request path.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t time_out;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines timeout in milliseconds after which the onTimeout(zClientWS* p) function will be called in case of no read/write events.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t max_header;</span><br>
+<span class="ifc">size_t max_body;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By default:<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_header = zClientWS::header_max_length;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_body = zClientWS::packet_max_length;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::map&lt;std::string,std::string&gt; head;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEAD of the http message. All names are set to uppercase(UPGRADE: websocket).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void send(const std::string& msg, bool fragmented=false);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends message msg to server, bool fragmented defines the fragmented type of message.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The message will be queued.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void close();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends close message to server and then close connection.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The function zPacketThread::onClose(zClientWS* p) will be called.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void ping();</span><br>
+<span class="ifc">virtual void pong();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends ping/pong message.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_HTTP_Client"></a>
+<center><span class="caption">class zClientHTTP: public zPacket</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zClientHTTP class provides work with HTTP data on the client side (RESTful).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Each zClientHTTP object belongs to the pool, and only through it can be created or deleted.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zClientHTTP are defined in zPacket.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">static size_t header_max_length;</span><br>
+<span class="ifc">static size_t packet_max_length;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Maximum size of http header and body.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">mutable int status;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines packet's status.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHTTP_CLIENT_INVALID -1 - Invalid state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHTTP_CLIENT_EMPTY 0 - Initial state;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHTTP_CLIENT_CONNECTED 1 - Connection is established;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHTTP_CLIENT_SENT 2 - Request is sending or was sent.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHTTP_CLIENT_HEADER 4 - Header is read;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZHTTP_CLIENT_COMPLETE 8 - Reply is OK;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string str_header;</span><br>
+<span class="ifc">std::string str_in;</span><br>
+<span class="ifc">std::string str_out;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_header is http header with last \r\n\r\n.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_in is http body.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_out is output buffer.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::string address;</span><br>
+<span class="ifc">unsigned peerport;</span><br>
+<span class="ifc">std::string host;</span><br>
+<span class="ifc">unsigned port;</span><br>
+<span class="ifc">std::string version;</span><br>
+<span class="ifc">std::string http_code;</span><br>
+<span class="ifc">std::string content_type;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address - ip address on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;peerport - peer port.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;host - host in http response (for example www.example.com).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port - socket port on which the connection was opened.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;version - HTTP version.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;http_code - Reply HTTP Status Code.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;content_type - Content-Type from head.<br>
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool keep_alive;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reply: if Connection: close (by default) then keep_alive is false, if Connection: keep_alive then keep_alive is true.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t time_out;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Defines timeout in milliseconds after which the onTimeout(zClientHTTP* p) function will be called in case of no read/write events.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t max_header;</span><br>
+<span class="ifc">size_t max_body;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By default:<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_header = zClientHTTP::header_max_length;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_body = zClientHTTP::packet_max_length;
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">size_t length;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Length of the message body.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">bool chunked;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If Transfer-Encoding: chunked then chunked is true, chunked is false in other cases.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">std::map&lt;std::string,std::string&gt; head;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEAD of the http message. All names are set to uppercase(CONNECTION: keep_alive).
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void write(const std::string &src);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets body reply: str_out+=src;.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void send(const std::string& hdr=&quot;&quot;);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends request with http header hdr.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void close();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Closes connection and removes client.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The function zPacketThread::onClose(zClientHTTP* p) will not be called.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_Packet_Thread"></a>
+<center><span class="caption">class zPacketThread: public zPacket, public zThread</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zPacketThread object is a thread that processes events on network objects.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Events can be redefined in the inherited class: onAccept, onOpen, onHeader, onRead, onWrite, onMessage, onTimeout, onClose, idle.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Class zPacketThread are defined in zPacket.h file.<br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">enum zProto { PROTO_HTTP=1, PROTO_WS=2, PROTO_TCP=4 };</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Server Socket types.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">class zPTParam;</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A class for describing of server socket and SSL_CTX structure.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class zPTParam<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zPTParam(zPacketThread::zProto prt=zPacketThread::PROTO_HTTP, SSL_CTX* sctx=NULL):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  proto(prt),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  ctx(sctx)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zPacketThread::zProto proto;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SSL_CTX* ctx;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">zPacketThread(int s, const zPacketThread::zPTParam& proto);</span><br>
+<span class="ifc">zPacketThread(const std::map&lt;int, zPacketThread::zPTParam&gt;& s);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates zPacketThread.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void idle();</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes from time to time.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void onAccept(zPacketTCP* p);</span><br>
+<span class="ifc">virtual void onRead(zPacketTCP* p);</span><br>
+<span class="ifc">virtual void onWrite(zPacketTCP* p);</span><br>
+<span class="ifc">virtual void onTimeout(zPacketTCP* p);</span><br>
+<span class="ifc">virtual void onClose(zPacketTCP* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onAccept is called on accept connection.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onRead is called after reading any bytes when the header has already been processed.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onWrite is called after p-&gt;str_out has completely been sent.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onTimeout is called when there is no event for specified timeout p-&gt;time_out.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onClose is called before p is removed.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void onAccept(zPacketWS* p);</span><br>
+<span class="ifc">virtual void onOpen(zPacketWS* p);</span><br>
+<span class="ifc">virtual void onRead(zPacketWS* p);</span><br>
+<span class="ifc">virtual void onWrite(zPacketWS* p);</span><br>
+<span class="ifc">virtual void onMessage(zPacketWS* p);</span><br>
+<span class="ifc">virtual void onTimeout(zPacketWS* p);</span><br>
+<span class="ifc">virtual void onClose(zPacketWS* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onAccept is called on accept connection.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onOpen is called when connection and ws-handshake has been established.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p-&gt;accept() accepts connection with additional parameters.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If accept(const std::map&lt;std::string, std::string&gt;& add_header) is not called the connection will be closed.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onRead is called after reading any bytes when the header has already been processed.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onWrite is called after p-&gt;str_out has completely been sent.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onMessage is called when message has been received.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onTimeout is called when there is no event for specified timeout p-&gt;time_out.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onClose is called before p is removed.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void onAccept(zPacketHTTP* p);</span><br>
+<span class="ifc">virtual void onHeader(zPacketHTTP* p);</span><br>
+<span class="ifc">virtual void onRead(zPacketHTTP* p);</span><br>
+<span class="ifc">virtual void onWrite(zPacketHTTP* p);</span><br>
+<span class="ifc">virtual void onMessage(zPacketHTTP* p) =0;</span><br>
+<span class="ifc">virtual bool onTimeout(zPacketHTTP* p);</span><br>
+<span class="ifc">virtual void onClose(zPacketHTTP* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onAccept is called on accept connection.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onHeader is called when the header has already been processed.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onRead is called after reading any bytes when the header has already been processed.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onWrite is called after p-&gt;str_out has completely been sent.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onMessage is called when http request has completely been received.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onTimeout is called when there is no event for specified timeout p-&gt;time_out.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Return false to close connection, return true to save connection.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onClose is called before p is removed.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void onOpen(zClientTCP* p);</span><br>
+<span class="ifc">virtual void onRead(zClientTCP* p);</span><br>
+<span class="ifc">virtual void onWrite(zClientTCP* p);</span><br>
+<span class="ifc">virtual void onTimeout(zClientTCP* p);</span><br>
+<span class="ifc">virtual void onClose(zClientTCP* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onOpen is called when connection has been established.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onRead is called after reading any bytes when the header has already been processed.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onWrite is called after p-&gt;str_out has completely been sent.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onTimeout is called when there is no event for specified timeout p-&gt;time_out.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onClose is called before p is removed.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void onOpen(zClientWS* p);</span><br>
+<span class="ifc">virtual void onRead(zClientWS* p);</span><br>
+<span class="ifc">virtual void onWrite(zClientWS* p);</span><br>
+<span class="ifc">virtual void onMessage(zClientWS* p);</span><br>
+<span class="ifc">virtual void onTimeout(zClientWS* p);</span><br>
+<span class="ifc">virtual void onClose(zClientWS* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onOpen is called when connection and ws-handshake has been established.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onRead is called after reading any bytes when the header has already been processed.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onWrite is called after p-&gt;str_out has completely been sent.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onMessage is called when message has been received.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onTimeout is called when there is no event for specified timeout p-&gt;time_out.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onClose is called before p is removed.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual void onOpen(zClientHTTP* p);</span><br>
+<span class="ifc">virtual void onHeader(zClientHTTP* p);</span><br>
+<span class="ifc">virtual void onRead(zClientHTTP* p);</span><br>
+<span class="ifc">virtual void onWrite(zClientHTTP* p);</span><br>
+<span class="ifc">virtual void onMessage(zClientHTTP* p);</span><br>
+<span class="ifc">virtual bool onTimeout(zClientHTTP* p);</span><br>
+<span class="ifc">virtual void onClose(zClientHTTP* p);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onOpen is called when connection has been established.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onHeader is called when the header has already been processed.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onRead is called after reading any bytes when the header has already been processed.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onWrite is called after p-&gt;str_out has completely been sent.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onMessage is called when message has been received.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onTimeout is called when there is no event for specified timeout p-&gt;time_out.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Return false to close connection, return true to save connection.<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;onClose is called before p is removed.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual zClientTCP* connectTCP(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);</span><br>
+<span class="ifc">virtual zClientTCP6* connectTCP(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tries to set connection to adr:port.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If cctx is not NULL the encrypted connection is established.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If connection has been established then onOpen(zClientTCP* p) is called.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If connection has been failed then onClose(zClientTCP* p) is called.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connectTCP - ipv4, connectTCP6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual zClientWS* connectWS(const std::string& adr,unsigned short port, const std::string& path=&quot;/&quot;, const std::string& version=&quot;13&quot;, SSL_CTX* cctx=NULL, const std::map&lt;std::string, std::string&gt;& add_header=std::map&lt;std::string, std::string&gt;());</span><br>
+<span class="ifc">virtual zClientWS6* connectWS(const std::string& adr,unsigned short port, const std::string& path=&quot;/&quot;, const std::string& version=&quot;13&quot;, SSL_CTX* cctx=NULL, const std::map&lt;std::string, std::string&gt;& add_header=std::map&lt;std::string, std::string&gt;());</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tries to set connection to adr:port.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If cctx is not NULL the encrypted connection is established.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path - http path, version - ws version, add_header - additional header lines for request.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If connection has been established then onOpen(zClientWS* p) is called.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If connection has been failed then onClose(zClientWS* p) is called.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connectWS - ipv4, connectWS6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual zClientHTTP* connectHTTP(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);</span><br>
+<span class="ifc">virtual zClientHTTP* connectHTTP6(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tries to set connection to adr:port.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If cctx is not NULL the encrypted connection is established.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If connection has been established then onOpen(zClientHTTP* p) is called.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If connection has been failed then onClose(zClientHTTP* p) is called.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connectHTTP - ipv4, connectHTTP6 - ipv6.
+<br><br>
+</div>
+
+<hr width=100% color= #000000 align="center">
+<div  class="doctext">
+<span class="ifc">virtual zClientHTTP* getClientHTTP(const std::string& adr,unsigned short port);</span><br>
+<span class="ifc">virtual zClientHTTP* getClientHTTP6(const std::string& adr,unsigned short port);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns already established connections that have been stored as keep_alive.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If such connections were not found then NULL is returned.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;getClientHTTP - ipv4, getClientHTTP6 - ipv6.
+<br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_JSON"></a>
+<center><span class="caption">class zJSON</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; See <a href="https://sourceforge.net/projects/zet-json/" target="_blank"> ZET-JSON Library.</a> <br><br>
+</div>
+
+<br><hr width=100% color= #008080 align="center"><br>
+<a name="p_CSV"></a>
+<center><span class="caption">class zCSV</span></center><br>
+<div  class="doctext">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; See <a href="https://sourceforge.net/projects/zet-csv/" target="_blank"> ZET-CSV Library.</a> <br><br>
+</div>
+<br><hr width=100% color= #008080 align="center"><br>
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+</BODY></HTML>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

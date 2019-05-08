@@ -23,7 +23,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <io.h>
-#include <winsock.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 #include <stdexcept>
 #else
@@ -147,15 +148,15 @@ void ZNSOCKET::sleep(unsigned timeout)
 
 std::string ZNSOCKET::host(const std::string &addr)
 {
- std::string adr = ZNSTR::trim(addr);
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
  struct hostent *entry = NULL;
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
  entry = ::gethostbyname(adr.c_str());
 #else
 #if defined(__GNUG__) || defined(__linux__)
  struct hostent hst;
- size_t hstbuflen=1024;
- char tmphstbuf[1024];
+ size_t hstbuflen=2048;
+ char tmphstbuf[2048];
  int herr;
  ::gethostbyname_r(adr.c_str(), &hst, tmphstbuf, hstbuflen, &entry, &herr);
 #endif
@@ -164,17 +165,46 @@ std::string ZNSOCKET::host(const std::string &addr)
  return inet_ntoa(*((in_addr *)entry->h_addr));
 };
 
+std::string ZNSOCKET::host6(const std::string &addr)
+{
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res, *rp;
+
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_STREAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return "";
+
+ struct sockaddr_in6  *sin6;
+ char ipstr[INET6_ADDRSTRLEN];
+ for (rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  sin6=(struct sockaddr_in6 *) rp->ai_addr;
+  inet_ntop(rp->ai_family, &(sin6->sin6_addr), ipstr, INET6_ADDRSTRLEN);
+  freeaddrinfo(res);
+  return ipstr;
+ }
+
+ freeaddrinfo(res);
+ return "";
+};
+
 size_t ZNSOCKET::host(std::vector<std::string>& ret, const std::string &addr)
 {
- std::string adr = ZNSTR::trim(addr);
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
  struct hostent *entry = NULL;
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
  entry = ::gethostbyname(adr.c_str());
 #else
 #if defined(__GNUG__) || defined(__linux__)
  struct hostent hst;
- size_t hstbuflen=1024;
- char tmphstbuf[1024];
+ size_t hstbuflen=2048;
+ char tmphstbuf[2048];
  int herr;
  ::gethostbyname_r(adr.c_str(), &hst, tmphstbuf, hstbuflen, &entry, &herr);
 #endif
@@ -185,17 +215,46 @@ size_t ZNSOCKET::host(std::vector<std::string>& ret, const std::string &addr)
  return i;
 };
 
+size_t ZNSOCKET::host6(std::vector<std::string>& ret, const std::string &addr)
+{
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res, *rp;
+
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_STREAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return 0;
+
+ size_t n=0;
+ struct sockaddr_in6  *sin6;
+ char ipstr[INET6_ADDRSTRLEN];
+ for (rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  sin6=(struct sockaddr_in6 *) rp->ai_addr;
+  if(inet_ntop(rp->ai_family, &(sin6->sin6_addr), ipstr, INET6_ADDRSTRLEN))
+  { ret.push_back(ipstr); n++; }
+ }
+
+ freeaddrinfo(res);
+ return n;
+};
+
 size_t ZNSOCKET::host(std::list<std::string>& ret, const std::string &addr)
 {
- std::string adr = ZNSTR::trim(addr);
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
  struct hostent *entry = NULL;
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
  entry = ::gethostbyname(adr.c_str());
 #else
 #if defined(__GNUG__) || defined(__linux__)
  struct hostent hst;
- size_t hstbuflen=1024;
- char tmphstbuf[1024];
+ size_t hstbuflen=2048;
+ char tmphstbuf[2048];
  int herr;
  ::gethostbyname_r(adr.c_str(), &hst, tmphstbuf, hstbuflen, &entry, &herr);
 #endif
@@ -204,6 +263,112 @@ size_t ZNSOCKET::host(std::list<std::string>& ret, const std::string &addr)
  size_t i=0;
  for(; entry->h_addr_list[i] != NULL; i++) { ret.push_back(inet_ntoa(*((in_addr *)entry->h_addr_list[i]))); }
  return i;
+};
+
+size_t ZNSOCKET::host6(std::list<std::string>& ret, const std::string &addr)
+{
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res, *rp;
+
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_STREAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return 0;
+
+ size_t n=0;
+ struct sockaddr_in6  *sin6;
+ char ipstr[INET6_ADDRSTRLEN];
+ for (rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  sin6=(struct sockaddr_in6 *) rp->ai_addr;
+  if(inet_ntop(rp->ai_family, &(sin6->sin6_addr), ipstr, INET6_ADDRSTRLEN))
+  { ret.push_back(ipstr); n++; }
+ }
+
+ freeaddrinfo(res);
+ return n;
+};
+
+size_t ZNSOCKET::resolve(std::vector<std::string>& ret4, std::vector<std::string>& ret6, const std::string &addr)
+{
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res, *rp;
+
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_UNSPEC;
+ hints.ai_socktype = SOCK_STREAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return 0;
+
+ size_t n=0;
+ struct sockaddr_in *sin4;
+ struct sockaddr_in6  *sin6;
+ char ipstr[INET6_ADDRSTRLEN];
+ for (rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family == AF_INET)
+  {
+   sin4= (struct sockaddr_in *) rp->ai_addr;
+   if(inet_ntop(rp->ai_family, &(sin4->sin_addr), ipstr, INET6_ADDRSTRLEN))
+   { ret4.push_back(ipstr); n++; }
+  }
+  else if(rp->ai_family == AF_INET6)
+  {
+   sin6=(struct sockaddr_in6 *) rp->ai_addr;
+   if(inet_ntop(rp->ai_family, &(sin6->sin6_addr), ipstr, INET6_ADDRSTRLEN))
+   { ret6.push_back(ipstr); n++; }
+  }
+ }
+
+ freeaddrinfo(res);
+ return n;
+
+};
+
+size_t ZNSOCKET::resolve(std::list<std::string>& ret4, std::list<std::string>& ret6, const std::string &addr)
+{
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res, *rp;
+
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_UNSPEC;
+ hints.ai_socktype = SOCK_STREAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return 0;
+
+ size_t n=0;
+ struct sockaddr_in *sin4;
+ struct sockaddr_in6  *sin6;
+ char ipstr[INET6_ADDRSTRLEN];
+ for (rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family == AF_INET)
+  {
+   sin4= (struct sockaddr_in *) rp->ai_addr;
+   if(inet_ntop(rp->ai_family, &(sin4->sin_addr), ipstr, INET6_ADDRSTRLEN))
+   { ret4.push_back(ipstr); n++; }
+  }
+  else if(rp->ai_family == AF_INET6)
+  {
+   sin6=(struct sockaddr_in6 *) rp->ai_addr;
+   if(inet_ntop(rp->ai_family, &(sin6->sin6_addr), ipstr, INET6_ADDRSTRLEN))
+   { ret6.push_back(ipstr); n++; }
+  }
+ }
+
+ freeaddrinfo(res);
+ return n;
 };
 
 std::string ZNSOCKET::iptoString(unsigned addr)
@@ -254,15 +419,15 @@ int ZNSOCKET::socket(const std::string& _adr, unsigned short port, bool blocking
 {
  int s=::socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
  if(s < 0) return -1;
- std::string adr = ZNSTR::trim(_adr);
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
  struct hostent *entry=NULL;
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
  entry = ::gethostbyname(adr.c_str());
 #else
 #if defined(__GNUG__) || defined(__linux__)
  struct hostent hst;
- size_t hstbuflen=1024;
- char tmphstbuf[1024];
+ size_t hstbuflen=2048;
+ char tmphstbuf[2048];
  int herr;
  ::gethostbyname_r(adr.c_str(), &hst, tmphstbuf, hstbuflen, &entry, &herr);
 #endif
@@ -309,11 +474,76 @@ int ZNSOCKET::socket(const std::string& _adr, unsigned short port, bool blocking
  return s;
 };
 
+int ZNSOCKET::socket6(const std::string& _adr, unsigned short port, bool blocking, unsigned timeout)
+{
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res;
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_STREAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return -1;
+
+ struct addrinfo* aip=NULL;
+
+ for(struct addrinfo* rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  aip=rp;
+  break;
+ }
+ if(aip == NULL) { freeaddrinfo(res); return -1; }
+
+ int s=::socket(aip->ai_family, aip->ai_socktype, aip->ai_protocol);
+ if(s < 0) { freeaddrinfo(res); return -1; }
+
+
+ struct sockaddr_in6* sin6= (struct sockaddr_in6 *) aip->ai_addr;
+
+ sin6->sin6_port = htons(port);
+ ZNSOCKET::block(s,false);
+ if(::connect(s, aip->ai_addr, aip->ai_addrlen) < 0) 
+ {
+#if defined(_WIN32) || defined(_WIN64)
+  if(WSAGetLastError() != WSAEWOULDBLOCK) { ZNSOCKET::close(s); freeaddrinfo(res); return -1; }
+#else
+#if defined(__GNUG__) || defined(__linux__) || defined(__CYGWIN__)
+  if(errno != EINPROGRESS) { ZNSOCKET::close(s); freeaddrinfo(res); return -1; }
+#endif
+#endif
+  fd_set tSet;
+  FD_ZERO(&tSet);
+  FD_SET(((unsigned)s), &tSet);
+  fd_set tExc;
+  FD_ZERO(&tExc);
+  FD_SET(((unsigned)s), &tExc);
+  struct timeval tz; tz.tv_sec=timeout/1000; tz.tv_usec=timeout%1000*1000;
+  if(::select(s+1,(fd_set *) NULL,&tSet,&tExc,&tz) < 0) { ZNSOCKET::close(s); freeaddrinfo(res); return -1; }
+  if(FD_ISSET(s,&tExc)) { ZNSOCKET::close(s); freeaddrinfo(res); return -1; }
+  if(!(FD_ISSET(s,&tSet))) { ZNSOCKET::close(s); freeaddrinfo(res); return -1; }
+#if defined(_WIN32) || defined(_WIN64)
+#else
+#if defined(__GNUG__) || defined(__linux__) || defined(__CYGWIN__)
+  int optval;
+  elmlen optlen = sizeof(optval);
+  if(getsockopt(s, SOL_SOCKET, SO_ERROR, (char *) &optval, &optlen) < 0) { ZNSOCKET::close(s); freeaddrinfo(res); return -1; }
+  if(optval) { ZNSOCKET::close(s); freeaddrinfo(res); return -1; }
+#endif
+#endif
+ }
+ freeaddrinfo(res);
+ ZNSOCKET::block(s,blocking);
+ return s;
+};
+
 int ZNSOCKET::async_socket(const std::string& _adr,unsigned short port)
 {
  int s=::socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
  if(s < 0) return -1;
- std::string adr = ZNSTR::trim(_adr);
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
  struct hostent *entry=NULL;
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
  entry = ::gethostbyname(adr.c_str());
@@ -346,6 +576,50 @@ int ZNSOCKET::async_socket(const std::string& _adr,unsigned short port)
  return s;
 };
 
+int ZNSOCKET::async_socket6(const std::string& _adr,unsigned short port)
+{
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res;
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_STREAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return -1;
+
+ struct addrinfo* aip=NULL;
+
+ for(struct addrinfo* rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  aip=rp;
+  break;
+ }
+ if(aip == NULL) { freeaddrinfo(res); return -1; }
+
+ int s=::socket(aip->ai_family, aip->ai_socktype, aip->ai_protocol);
+ if(s < 0) { freeaddrinfo(res); return -1; }
+
+ struct sockaddr_in6* sin6= (struct sockaddr_in6 *) aip->ai_addr;
+
+ sin6->sin6_port = htons(port);
+ ZNSOCKET::block(s,false);
+ if(::connect(s, aip->ai_addr, aip->ai_addrlen) < 0) 
+ {
+#if defined(_WIN32) || defined(_WIN64)
+  if(WSAGetLastError() != WSAEWOULDBLOCK) { ZNSOCKET::close(s); freeaddrinfo(res); return -1; }
+#else
+#if defined(__GNUG__) || defined(__linux__) || defined(__CYGWIN__)
+  if(errno != EINPROGRESS) { ZNSOCKET::close(s); freeaddrinfo(res); return -1; }
+#endif
+#endif
+ }
+ freeaddrinfo(res);
+ return s;
+};
+
 int ZNSOCKET::async_select(int s, unsigned timeout)
 {
  fd_set tSet;
@@ -373,11 +647,11 @@ int ZNSOCKET::async_select(int s, unsigned timeout)
  return 0;
 };
 
-int ZNSOCKET::server(const std::string &_adr, unsigned short p, int backlog, bool blocking)
+int ZNSOCKET::server(const std::string &_adr, unsigned short port, int backlog, bool blocking)
 {
  int s=::socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
  if(s < 0) return -1;
- std::string adr = ZNSTR::trim(_adr);
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
  struct hostent *entry=NULL;
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
  entry = ::gethostbyname(adr.c_str());
@@ -399,14 +673,55 @@ int ZNSOCKET::server(const std::string &_adr, unsigned short p, int backlog, boo
  myname.sin_family = AF_INET;
 // myname.sin_addr.s_addr = inet_addr(adr.c_str());
  myname.sin_addr.s_addr = ((in_addr *)entry->h_addr)->s_addr;
- myname.sin_port = htons(p);
+ myname.sin_port = htons(port);
  if(::bind(s,(struct sockaddr *) &myname,sizeof(myname)) < 0) { ZNSOCKET::close(s); return -1; }
  if(::listen(s, backlog) < 0) { ZNSOCKET::close(s); return -1; }
  ZNSOCKET::block(s,blocking);
  return s;
 };
 
-int ZNSOCKET::server(unsigned short p, int backlog, bool blocking)
+int ZNSOCKET::server6(const std::string &_adr, unsigned short port, int backlog, bool blocking)
+{
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res;
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_STREAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return -1;
+
+ struct addrinfo* aip=NULL;
+
+ for(struct addrinfo* rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  aip=rp;
+  break;
+ }
+ if(aip == NULL) { freeaddrinfo(res); return -1; }
+
+ int s=::socket(aip->ai_family, aip->ai_socktype, aip->ai_protocol);
+ if(s < 0) { freeaddrinfo(res); return -1; }
+ int flags = 1;
+ setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &flags, sizeof(flags));
+
+ struct sockaddr_in6* sin6= (struct sockaddr_in6 *) aip->ai_addr;
+
+ sin6->sin6_port = htons(port);
+
+ if(::bind(s, aip->ai_addr, aip->ai_addrlen) < 0) { ZNSOCKET::close(s); freeaddrinfo(res); return -1; }
+ freeaddrinfo(res);
+ if(::listen(s, backlog) < 0) { ZNSOCKET::close(s); return -1; }
+
+ ZNSOCKET::block(s,blocking);
+
+ return s;
+};
+
+int ZNSOCKET::server(unsigned short port, int backlog, bool blocking)
 {
  int s=::socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
  if(s < 0) return -1;
@@ -414,10 +729,31 @@ int ZNSOCKET::server(unsigned short p, int backlog, bool blocking)
  memset(&myname, 0, sizeof(myname));
  myname.sin_family = AF_INET;
  myname.sin_addr.s_addr = INADDR_ANY;
- myname.sin_port = htons(p);
+ myname.sin_port = htons(port);
  if(::bind(s,(struct sockaddr *) &myname,sizeof(myname)) < 0) { ZNSOCKET::close(s); return -1; }
  if(::listen(s, backlog) < 0) { ZNSOCKET::close(s); return -1; }
  ZNSOCKET::block(s,blocking);
+ return s;
+};
+
+int ZNSOCKET::server6(unsigned short port, int backlog, bool blocking)
+{
+ int s=::socket(AF_INET6,SOCK_STREAM,IPPROTO_TCP);
+ if(s < 0) { return -1; }
+ int flags = 1;
+ setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &flags, sizeof(flags));
+
+ struct sockaddr_in6 sin6;
+ memset(&sin6, 0, sizeof(sin6));
+ sin6.sin6_family = AF_INET6;
+ sin6.sin6_addr = in6addr_any;
+ sin6.sin6_port = htons(port);
+
+ if(::bind(s, (struct sockaddr *) &sin6, sizeof(sin6)) < 0) { ZNSOCKET::close(s); return -1; }
+ if(::listen(s, backlog) < 0) { ZNSOCKET::close(s); return -1; }
+
+ ZNSOCKET::block(s,blocking);
+
  return s;
 };
 
@@ -460,9 +796,12 @@ int ZNSOCKET::accept(int s, unsigned tm, bool blocking)
  if(FD_ISSET(s,&tExc)) return -1;
  if(FD_ISSET(s,&tSet))
  {
+/*
   struct sockaddr_in addr;
   elmlen adrlen = sizeof(addr);
   int n = ::accept(s, (struct sockaddr*) &addr,&adrlen);
+*/
+  int n = ::accept(s, NULL, NULL);
   if(n < 0) { return -1; }
   ZNSOCKET::block(n,blocking);
   return n;
@@ -470,12 +809,14 @@ int ZNSOCKET::accept(int s, unsigned tm, bool blocking)
  return 0;
 };
 
-
 int ZNSOCKET::accept(int s, bool blocking)
 {
+/*
  struct sockaddr_in addr;
  elmlen adrlen = sizeof(addr);
  int n = ::accept(s, (struct sockaddr*) &addr,&adrlen);
+*/
+ int n = ::accept(s, NULL, NULL);
  if(n < 0) { return -1; }
  ZNSOCKET::block(n,blocking);
  return n;
@@ -484,19 +825,7 @@ int ZNSOCKET::accept(int s, bool blocking)
 ssize_t ZNSOCKET::read(int s, std::string &ret)
 {
  if(s < 0) return -1; 
-/*
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- struct timeval tz; tz.tv_sec=0; tz.tv_usec=0;
- if(::select(s+1,&tSet,(fd_set *) NULL,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
- if(FD_ISSET(s,&tSet))
-*/
-  
+
  char r[65536];
  int n;
  ssize_t n_r=0;
@@ -524,18 +853,7 @@ ssize_t ZNSOCKET::read(int s, std::string &ret, char* r, size_t len)
 {
  if(s < 0) return -1;
  if(len == 0) return 0;
-/*
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- struct timeval tz; tz.tv_sec=0; tz.tv_usec=0;
- if(::select(s+1,&tSet,(fd_set *) NULL,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
- if(FD_ISSET(s,&tSet))
-*/
+
  int n;
  ssize_t n_r=0;
  while(1)
@@ -583,18 +901,6 @@ ssize_t ZNSOCKET::read(int s, char* ret, size_t len)
 ssize_t ZNSOCKET::write(int s, const std::string &v, size_t pos)
 {
  if(s < 0) return -1; 
-/*
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- struct timeval tz; tz.tv_sec=0; tz.tv_usec=0;
- if(::select(s+1,(fd_set *) NULL,&tSet,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
- if(FD_ISSET(s,&tSet))
-*/
  
  size_t l=v.size();
  if(l == 0 || pos >= l) return 0;
@@ -645,44 +951,69 @@ ssize_t ZNSOCKET::send(int s,const std::string &v, size_t pos)
  return n;
 };
 
+int ZNSOCKET::family(int s)
+{
+ struct sockaddr_storage stor;
+ elmlen adrlen = sizeof(stor);
+ memset(&stor,0,adrlen);
+ if(getsockname(s,(struct sockaddr*) &stor,&adrlen) < 0) return -1;
+ return stor.ss_family;
+};
+
 std::string ZNSOCKET::getAddress(int s)
 {
  if(s < 0) return "";
- struct sockaddr addr;
+ struct sockaddr_storage addr;
  elmlen adrlen = sizeof(addr);
  memset(&addr,0,adrlen);
- if(getsockname(s,&addr,&adrlen) < 0) return "";
- return inet_ntoa(((sockaddr_in*) &addr)->sin_addr);
+ if(getsockname(s,(struct sockaddr*) &addr,&adrlen) < 0) return "";
+ if(addr.ss_family == AF_INET) { return inet_ntoa(((sockaddr_in*) &addr)->sin_addr); }
+ else if(addr.ss_family == AF_INET6)
+ {
+  char ipstr[INET6_ADDRSTRLEN];
+  if(inet_ntop(addr.ss_family, &(((struct sockaddr_in6*) &addr)->sin6_addr), ipstr, INET6_ADDRSTRLEN)) return ipstr;
+ }
+ return "";
 };
 
 unsigned ZNSOCKET::getPort(int s)
 {
  if(s < 0) return 0;
- struct sockaddr addr;
+ struct sockaddr_storage addr;
  elmlen adrlen = sizeof(addr);
  memset(&addr,0,adrlen);
- if(getsockname(s,&addr,&adrlen) < 0) return 0;
- return ((unsigned) ntohs(((sockaddr_in*) &addr)->sin_port));
+ if(getsockname(s,(struct sockaddr*) &addr,&adrlen) < 0) return 0;
+ if(addr.ss_family == AF_INET) { return (unsigned) ntohs(((sockaddr_in*) &addr)->sin_port); }
+ else if(addr.ss_family == AF_INET6) { return (unsigned) ntohs(((struct sockaddr_in6*) &addr)->sin6_port); }
+ return 0;
 };
 
 std::string ZNSOCKET::getPeerAddress(int s)
 {
  if(s < 0) return "";
- struct sockaddr addr;
+ struct sockaddr_storage addr;
  elmlen adrlen = sizeof(addr);
  memset(&addr,0,adrlen);
- if(getpeername(s,&addr,&adrlen) < 0 ) return "";
- return inet_ntoa(((sockaddr_in*) &addr)->sin_addr);
+ if(getpeername(s,(struct sockaddr*) &addr,&adrlen) < 0) return "";
+ if(addr.ss_family == AF_INET) { return inet_ntoa(((sockaddr_in*) &addr)->sin_addr); }
+ else if(addr.ss_family == AF_INET6)
+ {
+  char ipstr[INET6_ADDRSTRLEN];
+  if(inet_ntop(addr.ss_family, &(((struct sockaddr_in6*) &addr)->sin6_addr), ipstr, INET6_ADDRSTRLEN)) return ipstr;
+ }
+ return "";
 };
 
 unsigned ZNSOCKET::getPeerPort(int s)
 {
  if(s < 0) return 0;
- struct sockaddr addr;
+ struct sockaddr_storage addr;
  elmlen adrlen = sizeof(addr);
  memset(&addr,0,adrlen);
- if(getpeername(s,&addr,&adrlen) < 0) return 0;
- return ((unsigned) ntohs(((sockaddr_in*) &addr)->sin_port));
+ if(getpeername(s,(struct sockaddr*) &addr,&adrlen) < 0) return 0;
+ if(addr.ss_family == AF_INET) { return (unsigned) ntohs(((sockaddr_in*) &addr)->sin_port); }
+ else if(addr.ss_family == AF_INET6) { return (unsigned) ntohs(((struct sockaddr_in6*) &addr)->sin6_port); }
+ return 0;
 };
 
 unsigned ZNSOCKET::getReceiveBufferSize(int s)
@@ -899,18 +1230,7 @@ ssize_t ZNSOCKET::read(SSL* c, std::string &ret)
  if(c == NULL) return -1; 
  int s=::SSL_get_fd(c);
  if(s < 0) return -1; 
-/*
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- struct timeval tz; tz.tv_sec=0; tz.tv_usec=0;
- if(::select(s+1,&tSet,(fd_set *) NULL,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
- if(FD_ISSET(s,&tSet))
-*/
+
  char r[65536];
  ssize_t n_r=0;
  for(int n;;)
@@ -932,18 +1252,7 @@ ssize_t ZNSOCKET::read(SSL* c, std::string &ret,char* r, size_t len)
  if(c == NULL) return -1; 
  int s=::SSL_get_fd(c);
  if(s < 0) return -1; 
-/*
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- struct timeval tz; tz.tv_sec=0; tz.tv_usec=0;
- if(::select(s+1,&tSet,(fd_set *) NULL,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
- if(FD_ISSET(s,&tSet))
-*/
+
  ssize_t n_r=0;
  for(int n;;)
  { 
@@ -980,18 +1289,7 @@ ssize_t ZNSOCKET::write(SSL* c, const std::string &v,size_t pos)
  if(c == NULL) return -1; 
  int s=::SSL_get_fd(c);
  if(s < 0) return -1; 
-/*
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- struct timeval tz; tz.tv_sec=0; tz.tv_usec=0;
- if(::select(s+1,(fd_set *) NULL,&tSet,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
-// if(FD_ISSET(s,&tSet))
-*/
+
  size_t l=v.size();
  if(l == 0 || pos >= l) return 0;
  int n= ::SSL_write(c,v.c_str()+pos,(int) (l-pos));
@@ -1053,15 +1351,15 @@ std::string ZNUDP::net_to_host(unsigned n)
 
 unsigned ZNUDP::host_to_net(const std::string& _adr)
 {
- std::string adr = ZNSTR::trim(_adr);
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
  struct hostent *entry = NULL;
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
  entry = ::gethostbyname(adr.c_str());
 #else
 #if defined(__GNUG__) || defined(__linux__)
  struct hostent hst;
- size_t hstbuflen=1024;
- char tmphstbuf[1024];
+ size_t hstbuflen=2048;
+ char tmphstbuf[2048];
  int herr;
  ::gethostbyname_r(adr.c_str(), &hst, tmphstbuf, hstbuflen, &entry, &herr);
 #endif
@@ -1070,19 +1368,190 @@ unsigned ZNUDP::host_to_net(const std::string& _adr)
  return ((in_addr *)entry->h_addr)->s_addr;
 };
 
+std::string ZNUDP::host(const std::string &addr) { return ZNSOCKET::host(addr); };
+
+std::string ZNUDP::host6(const std::string &addr)
+{
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res, *rp;
+
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_DGRAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return "";
+
+ struct sockaddr_in6  *sin6;
+ char ipstr[INET6_ADDRSTRLEN];
+ for (rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  sin6=(struct sockaddr_in6 *) rp->ai_addr;
+  inet_ntop(rp->ai_family, &(sin6->sin6_addr), ipstr, INET6_ADDRSTRLEN);
+  freeaddrinfo(res);
+  return ipstr;
+ }
+
+ freeaddrinfo(res);
+ return "";
+};
+
+size_t ZNUDP::host(std::vector<std::string>& ret, const std::string &addr) { return ZNSOCKET::host(ret, addr); };
+
+size_t ZNUDP::host6(std::vector<std::string>& ret, const std::string &addr)
+{
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res, *rp;
+
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_DGRAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return 0;
+
+ size_t n=0;
+ struct sockaddr_in6  *sin6;
+ char ipstr[INET6_ADDRSTRLEN];
+ for (rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  sin6=(struct sockaddr_in6 *) rp->ai_addr;
+  if(inet_ntop(rp->ai_family, &(sin6->sin6_addr), ipstr, INET6_ADDRSTRLEN))
+  { ret.push_back(ipstr); n++; }
+ }
+
+ freeaddrinfo(res);
+ return n;
+};
+
+size_t ZNUDP::host(std::list<std::string>& ret, const std::string &addr) { return ZNSOCKET::host(ret, addr); };
+
+size_t ZNUDP::host6(std::list<std::string>& ret, const std::string &addr)
+{
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res, *rp;
+
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_DGRAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return 0;
+
+ size_t n=0;
+ struct sockaddr_in6  *sin6;
+ char ipstr[INET6_ADDRSTRLEN];
+ for (rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  sin6=(struct sockaddr_in6 *) rp->ai_addr;
+  if(inet_ntop(rp->ai_family, &(sin6->sin6_addr), ipstr, INET6_ADDRSTRLEN))
+  { ret.push_back(ipstr); n++; }
+ }
+
+ freeaddrinfo(res);
+ return n;
+};
+
+size_t ZNUDP::resolve(std::vector<std::string>& ret4, std::vector<std::string>& ret6, const std::string &addr)
+{
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res, *rp;
+
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_UNSPEC;
+ hints.ai_socktype = SOCK_DGRAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return 0;
+
+ size_t n=0;
+ struct sockaddr_in *sin4;
+ struct sockaddr_in6  *sin6;
+ char ipstr[INET6_ADDRSTRLEN];
+ for (rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family == AF_INET)
+  {
+   sin4= (struct sockaddr_in *) rp->ai_addr;
+   if(inet_ntop(rp->ai_family, &(sin4->sin_addr), ipstr, INET6_ADDRSTRLEN))
+   { ret4.push_back(ipstr); n++; }
+  }
+  else if(rp->ai_family == AF_INET6)
+  {
+   sin6=(struct sockaddr_in6 *) rp->ai_addr;
+   if(inet_ntop(rp->ai_family, &(sin6->sin6_addr), ipstr, INET6_ADDRSTRLEN))
+   { ret6.push_back(ipstr); n++; }
+  }
+ }
+
+ freeaddrinfo(res);
+ return n;
+
+};
+
+size_t ZNUDP::resolve(std::list<std::string>& ret4, std::list<std::string>& ret6, const std::string &addr)
+{
+ std::string adr = ZNSTR::trim(addr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res, *rp;
+
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_UNSPEC;
+ hints.ai_socktype = SOCK_DGRAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return 0;
+
+ size_t n=0;
+ struct sockaddr_in *sin4;
+ struct sockaddr_in6  *sin6;
+ char ipstr[INET6_ADDRSTRLEN];
+ for (rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family == AF_INET)
+  {
+   sin4= (struct sockaddr_in *) rp->ai_addr;
+   if(inet_ntop(rp->ai_family, &(sin4->sin_addr), ipstr, INET6_ADDRSTRLEN))
+   { ret4.push_back(ipstr); n++; }
+  }
+  else if(rp->ai_family == AF_INET6)
+  {
+   sin6=(struct sockaddr_in6 *) rp->ai_addr;
+   if(inet_ntop(rp->ai_family, &(sin6->sin6_addr), ipstr, INET6_ADDRSTRLEN))
+   { ret6.push_back(ipstr); n++; }
+  }
+ }
+
+ freeaddrinfo(res);
+ return n;
+};
+
+
 int ZNUDP::socket(const std::string& _adr, unsigned short port, bool blocking)
 {
  int s=::socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
  if(s < 0) return -1;
- std::string adr = ZNSTR::trim(_adr);
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
  struct hostent *entry = NULL;
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
  entry = ::gethostbyname(adr.c_str());
 #else
 #if defined(__GNUG__) || defined(__linux__)
  struct hostent hst;
- size_t hstbuflen=1024;
- char tmphstbuf[1024];
+ size_t hstbuflen=2048;
+ char tmphstbuf[2048];
  int herr;
  ::gethostbyname_r(adr.c_str(), &hst, tmphstbuf, hstbuflen, &entry, &herr);
 #endif
@@ -1101,19 +1570,59 @@ int ZNUDP::socket(const std::string& _adr, unsigned short port, bool blocking)
  return s;
 };
 
+int ZNUDP::socket6(const std::string& _adr, unsigned short port, bool blocking)
+{
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res;
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_DGRAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return -1;
+
+ struct addrinfo* aip=NULL;
+
+ for(struct addrinfo* rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  aip=rp;
+  break;
+ }
+ if(aip == NULL) { freeaddrinfo(res); return -1; }
+
+ int s=::socket(aip->ai_family, aip->ai_socktype, aip->ai_protocol);
+ if(s < 0) { freeaddrinfo(res); return -1; }
+
+
+ struct sockaddr_in6* sin6= (struct sockaddr_in6 *) aip->ai_addr;
+ sin6->sin6_port = htons(port);
+
+ if(::connect(s, aip->ai_addr, aip->ai_addrlen) < 0)
+ { ZNUDP::close(s); freeaddrinfo(res); return -1; }
+
+ freeaddrinfo(res);
+
+ ZNUDP::block(s,blocking);
+
+ return s;
+};
+
 int ZNUDP::server(const std::string &_adr, unsigned short p, bool blocking)
 {
  int s=::socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
  if(s < 0) return -1;
- std::string adr = ZNSTR::trim(_adr);
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
  struct hostent *entry = NULL;
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
  entry = ::gethostbyname(adr.c_str());
 #else
 #if defined(__GNUG__) || defined(__linux__)
  struct hostent hst;
- size_t hstbuflen=1024;
- char tmphstbuf[1024];
+ size_t hstbuflen=2048;
+ char tmphstbuf[2048];
  int herr;
  ::gethostbyname_r(adr.c_str(), &hst, tmphstbuf, hstbuflen, &entry, &herr);
 #endif
@@ -1131,6 +1640,46 @@ int ZNUDP::server(const std::string &_adr, unsigned short p, bool blocking)
  return s;
 };
 
+int ZNUDP::server6(const std::string &_adr, unsigned short port, bool blocking)
+{
+ std::string adr = ZNSTR::trim(_adr, " \t\v\r\n[]");
+ struct addrinfo  hints, *res;
+ memset(&hints, 0, sizeof(hints));
+ hints.ai_family = AF_INET6;
+ hints.ai_socktype = SOCK_DGRAM;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+#endif
+
+ if(getaddrinfo(adr.c_str(), NULL, &hints, &res) != 0) return -1;
+
+ struct addrinfo* aip=NULL;
+
+ for(struct addrinfo* rp = res; rp != NULL; rp = rp->ai_next)
+ {
+  if(rp->ai_family != AF_INET6) continue;
+  aip=rp;
+  break;
+ }
+ if(aip == NULL) { freeaddrinfo(res); return -1; }
+
+ int s=::socket(aip->ai_family, aip->ai_socktype, aip->ai_protocol);
+ if(s < 0) { freeaddrinfo(res); return -1; }
+ int flags = 1;
+ setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &flags, sizeof(flags));
+
+ struct sockaddr_in6* sin6= (struct sockaddr_in6 *) aip->ai_addr;
+
+ sin6->sin6_port = htons(port);
+
+ if(::bind(s, aip->ai_addr, aip->ai_addrlen) < 0) { ZNUDP::close(s); freeaddrinfo(res); return -1; }
+ freeaddrinfo(res);
+
+ ZNUDP::block(s,blocking);
+
+ return s;
+};
+
 bool ZNUDP::alive(int s) { return ZNSOCKET::alive(s); };
 
 void ZNUDP::close(int s) { return ZNSOCKET::close(s); };
@@ -1139,18 +1688,6 @@ void ZNUDP::close(int s) { return ZNSOCKET::close(s); };
 ssize_t ZNUDP::read(int s, unsigned& adr, unsigned short& port, std::string &ret)
 {
  if(s < 0) return -1;
-/*
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- struct timeval tz; tz.tv_sec=timeout/1000; tz.tv_usec=timeout%1000*1000;
- if(::select(s+1,&tSet,(fd_set *) NULL,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
- if(FD_ISSET(s,&tSet))
-*/
  char rv[65536];
  struct sockaddr_in myname;
  elmlen i=sizeof(myname);
@@ -1167,18 +1704,6 @@ ssize_t ZNUDP::read(int s, unsigned& adr, unsigned short& port, std::string &ret
 ssize_t ZNUDP::read(int s, unsigned& adr, unsigned short& port, std::string &ret, char rv[65536])
 {
  if(s < 0) return -1;
-/*
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- struct timeval tz; tz.tv_sec=timeout/1000; tz.tv_usec=timeout%1000*1000;
- if(::select(s+1,&tSet,(fd_set *) NULL,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
- if(FD_ISSET(s,&tSet))
-*/
  struct sockaddr_in myname;
  elmlen i=sizeof(myname);
  memset(&myname, 0,i);
@@ -1205,76 +1730,117 @@ ssize_t ZNUDP::read(int s, unsigned& adr, unsigned short& port, char* ret, size_
  return n;
 };
 
+ssize_t ZNUDP::read6(int s, struct in6_addr& adr, unsigned short& port, std::string &ret)
+{
+ if(s < 0) return -1;
+ char rv[65536];
+ struct sockaddr_in6 sin6;
+ elmlen i=sizeof(sin6);
+ memset(&sin6, 0,i);
+ sin6.sin6_family = AF_INET6;
+ ssize_t n= ::recvfrom(s,rv,65536,0,(struct sockaddr*) &sin6,&i);
+ if(n < 1) return -1;
+ ret.append(rv,n);
+ adr=sin6.sin6_addr;
+ port=ntohs(sin6.sin6_port);
+ return n;
+};
+
+ssize_t ZNUDP::read6(int s, struct in6_addr& adr, unsigned short& port, std::string &ret, char rv[65536])
+{
+ if(s < 0) return -1;
+ struct sockaddr_in6 sin6;
+ elmlen i=sizeof(sin6);
+ memset(&sin6, 0,i);
+ sin6.sin6_family = AF_INET6;
+ ssize_t n= ::recvfrom(s,rv,65536,0,(struct sockaddr*) &sin6,&i);
+ if(n < 1) return -1;
+ ret.append(rv,n);
+ adr=sin6.sin6_addr;
+ port=ntohs(sin6.sin6_port);
+ return n;
+};
+
+ssize_t ZNUDP::read6(int s, struct in6_addr& adr, unsigned short& port, char* ret, size_t len)
+{
+ if(s < 0) return -1;
+ struct sockaddr_in6 sin6;
+ elmlen i=sizeof(sin6);
+ memset(&sin6, 0,i);
+ sin6.sin6_family = AF_INET6;
+ ssize_t n= ::recvfrom(s,ret,len,0,(struct sockaddr*) &sin6,&i);
+ if(n < 1) return -1;
+ adr=sin6.sin6_addr;
+ port=ntohs(sin6.sin6_port);
+ return n;
+};
+
 ssize_t ZNUDP::write(int s, unsigned adr, unsigned short port, const std::string &v, size_t pos)
 {
  if(s < 0) return -1;
  size_t l=v.size();
  if(l == 0 || pos >= l) return 0;
-/*
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- struct timeval tz; tz.tv_sec=0; tz.tv_usec=0;
- if(::select(s+1,(fd_set *) NULL,&tSet,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
- if(FD_ISSET(s,&tSet))
-*/
- {
-//  std::string adr = ZNSTR::trim(_adr);
-//  struct hostent *entry = gethostbyname(adr.c_str());
-//  if(entry == NULL) return 0;
-//  adr = inet_ntoa(*((in_addr *) (entry->h_addr)));
-  struct sockaddr_in myname;
-  memset(&myname, 0, sizeof(myname));
-  myname.sin_family = AF_INET;
-//  myname.sin_addr.s_addr = inet_addr(adr.c_str());
-//  myname.sin_addr.s_addr = ((in_addr *)entry->h_addr)->s_addr;
-  myname.sin_addr.s_addr = adr;
-  myname.sin_port = htons(port);
-  if((l-pos) > 65000) l=(65000+pos);
-  int n= ::sendto(s,v.c_str()+pos,l-pos,0,(struct sockaddr*) &myname, sizeof(myname));
-  if(n < 1) return 0;
-  return n;
- }
-// return 0;
+ 
+ struct sockaddr_in myname;
+ memset(&myname, 0, sizeof(myname));
+ myname.sin_family = AF_INET;
+ myname.sin_addr.s_addr = adr;
+ myname.sin_port = htons(port);
+ if((l-pos) > 65000) l=(65000+pos);
+ int n= ::sendto(s,v.c_str()+pos,l-pos,0,(struct sockaddr*) &myname, sizeof(myname));
+ if(n < 1) return 0;
+ return n;
 };
 
 ssize_t ZNUDP::pass(int s, unsigned adr,unsigned short port, const char* v, size_t len)
 {
  if(s < 0) return -1;
  if(len == 0) return 0;
-/*
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- struct timeval tz; tz.tv_sec=0; tz.tv_usec=0;
- if(::select(s+1,(fd_set *) NULL,&tSet,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
- if(FD_ISSET(s,&tSet))
-*/
- {
-//  std::string adr = ZNSTR::trim(_adr);
-//  struct hostent *entry = gethostbyname(adr.c_str());
-//  if(entry == NULL) return 0;
-//  adr = inet_ntoa(*((in_addr *) (entry->h_addr)));
-  struct sockaddr_in myname;
-  memset(&myname, 0, sizeof(myname));
-  myname.sin_family = AF_INET;
-//  myname.sin_addr.s_addr = inet_addr(adr.c_str());
-//  myname.sin_addr.s_addr = ((in_addr *)entry->h_addr)->s_addr;
-  myname.sin_addr.s_addr = adr;
-  myname.sin_port = htons(port);
-  if(len > 65000) len=65000;
-  int n= ::sendto(s,v,len,0,(struct sockaddr*) &myname, sizeof(myname));
-  if(n < 1) return 0;
-  return n;
- }
+
+ struct sockaddr_in myname;
+ memset(&myname, 0, sizeof(myname));
+ myname.sin_family = AF_INET;
+ myname.sin_addr.s_addr = adr;
+ myname.sin_port = htons(port);
+ if(len > 65000) len=65000;
+ int n= ::sendto(s,v,len,0,(struct sockaddr*) &myname, sizeof(myname));
+ if(n < 1) return 0;
+ return n;
+};
+
+ssize_t ZNUDP::write6(int s, const struct in6_addr& adr, unsigned short port, const std::string &v, size_t pos)
+{
+ if(s < 0) return -1;
+ size_t l=v.size();
+ if(l == 0 || pos >= l) return 0;
+
+ struct sockaddr_in6 sin6;
+ elmlen i=sizeof(sin6);
+ memset(&sin6, 0,i);
+ sin6.sin6_family = AF_INET6;
+ sin6.sin6_addr=adr;
+ sin6.sin6_port= htons(port);
+ if((l-pos) > 65000) l=(65000+pos);
+ int n= ::sendto(s,v.c_str()+pos,l-pos,0,(struct sockaddr*) &sin6, i);
+ if(n < 1) return 0;
+ return n;
+};
+
+ssize_t ZNUDP::pass6(int s, const struct in6_addr& adr,unsigned short port, const char* v, size_t len)
+{
+ if(s < 0) return -1;
+ if(len == 0) return 0;
+
+ struct sockaddr_in6 sin6;
+ elmlen i=sizeof(sin6);
+ memset(&sin6, 0,i);
+ sin6.sin6_family = AF_INET6;
+ sin6.sin6_addr=adr;
+ sin6.sin6_port= htons(port);
+ if(len > 65000) len=65000;
+ int n= ::sendto(s,v,len,0,(struct sockaddr*) &sin6, i);
+ if(n < 1) return 0;
+ return n;
 };
 
 ssize_t ZNUDP::write(int s, const std::string &v, size_t pos)
@@ -1282,18 +1848,7 @@ ssize_t ZNUDP::write(int s, const std::string &v, size_t pos)
  if(s < 0) return -1;
  size_t l=v.size();
  if(l == 0 || pos >= l) return 0;
-/*
- fd_set tSet;
- FD_ZERO(&tSet);
- FD_SET(((unsigned)s), &tSet);
- fd_set tExc;
- FD_ZERO(&tExc);
- FD_SET(((unsigned)s), &tExc);
- struct timeval tz; tz.tv_sec=0; tz.tv_usec=0;
- if(::select(s+1,(fd_set *) NULL,&tSet,&tExc,&tz) < 0) return -1;
- if(FD_ISSET(s,&tExc)) return -1;
- if(FD_ISSET(s,&tSet))
-*/
+
  if((l-pos) > 65000) l=(65000+pos);
  ssize_t n= ::send(s,v.c_str()+pos,l-pos,0);
  if(n < 1) return -1;
@@ -1309,6 +1864,8 @@ ssize_t ZNUDP::pass(int s, const char* v, size_t len)
  if(n < 1) return -1;
  return n;
 };//ZNUDP::pass
+
+int ZNUDP::family(int s) { return ZNSOCKET::family(s); };
 
 std::string ZNUDP::getAddress(int s) { return ZNSOCKET::getAddress(s); };
 

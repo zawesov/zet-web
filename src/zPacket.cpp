@@ -369,16 +369,13 @@ static int parse_header(zPacketHTTP* src)
  if(k == src->head.end()) { src->status=ZHTTP_PACKET_INVALID; return src->status; }
  else
  {
-  size_t s=k->second.find(':');
-  if(s == std::string::npos) 
-  {
-   src->host=ZNSTR::trim(k->second);
-//   src->port=prt;
-  }
+  size_t s= k->second.rfind(']');
+  if(s != std::string::npos) { src->host=ZNSTR::trim(k->second.substr(0,s+1)); }
   else
   {
-   src->host=ZNSTR::trim(k->second.substr(0,s));
-//   src->port=ZNSTR::asUnsigned(k->second.c_str()+s+1,k->second.size()-s-1,prt);
+   s= k->second.rfind(':');
+   if(s == std::string::npos) { src->host=ZNSTR::trim(k->second); }
+   else { src->host=ZNSTR::trim(k->second.substr(0,s)); }
   }
  }
 
@@ -721,16 +718,13 @@ static int parse_ws_header(zPacketWS* src)
  if(k == src->head.end()) { src->status=ZWS_PACKET_INVALID; return src->status; }
  else
  {
-  size_t s=k->second.find(':');
-  if(s == std::string::npos) 
-  {
-   src->host=ZNSTR::trim(k->second);
-//   src->port=prt;
-  }
+  size_t s= k->second.rfind(']');
+  if(s != std::string::npos) { src->host=ZNSTR::trim(k->second.substr(0,s+1)); }
   else
   {
-   src->host=ZNSTR::trim(k->second.substr(0,s));
-//   src->port=ZNSTR::asUnsigned(k->second.c_str()+s+1,k->second.size()-s-1,prt);
+   s= k->second.rfind(':');
+   if(s == std::string::npos) { src->host=ZNSTR::trim(k->second); }
+   else { src->host=ZNSTR::trim(k->second.substr(0,s)); }
   }
  }
 /*
@@ -1309,6 +1303,33 @@ zClientTCP* zPacketThread::connectTCP(const std::string& addr,unsigned short por
  return p;
 };
 
+zClientTCP* zPacketThread::connectTCP6(const std::string& addr,unsigned short port, SSL_CTX* cctx)
+{
+ std::string adr=zDNS::host6(addr);
+ if(adr.empty()) return NULL;
+ int s=ZNSOCKET::async_socket6(adr, port);
+ if(s <= 0) return NULL;
+ zClientTCP* p= (zClientTCP*) tcp_client_pool.get(this);
+ if(p == NULL) { ZNSOCKET::close(s); LOG_PRINT_ERROR("System", "ClientTCP::error_connectTCP_1\n"); return NULL; }
+ p->sock=s; p->parent= this; /*p->address=ZNSOCKET::getPeerAddress(s); p->peerport=ZNSOCKET::getPeerPort(s);*/
+ p->host=ZNSTR::trim(addr); p->address=adr; p->port=port;
+ if(cctx)
+ {
+  p->ssl= ZNSOCKET::socket(p->sock, cctx);
+  if(p->ssl == NULL) { p->push(); LOG_PRINT_ERROR("System", "ClientTCP::connectTCP: error_ssl\n"); return NULL; }
+#ifdef SSL_MODE_ENABLE_PARTIAL_WRITE
+  SSL_set_mode(p->ssl, SSL_MODE_ENABLE_PARTIAL_WRITE);
+#endif
+#ifdef SSL_MODE_RELEASE_BUFFERS
+   SSL_set_mode(p->ssl, SSL_MODE_RELEASE_BUFFERS);
+#endif
+  SSL_set_tlsext_host_name(p->ssl, ZNSTR::trim(adr).c_str());
+ }
+ if(p->create_event(ev_base, EV_TIMEOUT | EV_WRITE | EV_PERSIST, p, (p->time_out)?(p->time_out/1000):WRITE_TIMEOUT_SEC, (p->time_out)?(p->time_out%1000):WRITE_TIMEOUT_MSEC) == NULL)
+ { p->push(); LOG_PRINT_ERROR("System", "ClientTCP::error_connectTCP_2\n"); return NULL; }
+ return p;
+};
+
 zClientWS* zPacketThread::connectWS(const std::string& addr,unsigned short port, const std::string& path, const std::string& version, SSL_CTX* cctx, const std::map<std::string, std::string>& add_header)
 {
  std::string adr=zDNS::host(addr);
@@ -1317,6 +1338,51 @@ zClientWS* zPacketThread::connectWS(const std::string& addr,unsigned short port,
  if(s <= 0) return NULL;
  zClientWS* p= (zClientWS*) ws_client_pool.get(this);
  if(p == NULL) { ZNSOCKET::close(s); LOG_PRINT_ERROR("System", "ClientWS::error_connectWS_1\n"); return NULL; }
+ p->sock=s; p->parent= this; /*p->address=ZNSOCKET::getPeerAddress(s); p->peerport=ZNSOCKET::getPeerPort(s);*/
+ p->host=ZNSTR::trim(addr); p->address=adr; p->port=port;
+ if(cctx)
+ {
+  p->ssl= ZNSOCKET::socket(p->sock, cctx);
+  if(p->ssl == NULL) { p->push(); LOG_PRINT_ERROR("System", "ClientWS::connectWS: error_ssl\n"); return NULL; }
+#ifdef SSL_MODE_ENABLE_PARTIAL_WRITE
+  SSL_set_mode(p->ssl, SSL_MODE_ENABLE_PARTIAL_WRITE);
+#endif
+#ifdef SSL_MODE_RELEASE_BUFFERS
+   SSL_set_mode(p->ssl, SSL_MODE_RELEASE_BUFFERS);
+#endif
+  SSL_set_tlsext_host_name(p->ssl, p->host.c_str());
+ }
+ p->str_out="GET "+path+" HTTP/1.1\r\nHost: "+ZNSTR::trim(adr)+':'+ZNSTR::toString(port)+"\r\n";
+ p->str_out+="Sec-WebSocket-Version: "+version+"\r\nConnection: keep-alive, Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: ";
+ ulonglong kw=m_rnd.rnd_64();
+ std::string w_key=ZNSTR::str2hex((const char*) &kw, sizeof(ulonglong))+"ZetWeb==";
+ p->ws_key=ws_hash(w_key);
+ p->str_out+=w_key+"\r\n";
+ for(std::map<std::string, std::string>::const_iterator k= add_header.begin(); k != add_header.end(); ++k)
+ { p->str_out+=k->first; p->str_out+=": "; p->str_out+=k->second; p->str_out+="\r\n"; }
+ p->str_out+="\r\n";
+ if(p->create_event(ev_base, EV_TIMEOUT | EV_WRITE | EV_PERSIST, p, (p->time_out)?(p->time_out/1000):WRITE_TIMEOUT_SEC, (p->time_out)?(p->time_out%1000):WRITE_TIMEOUT_MSEC) == NULL)
+ { p->push(); LOG_PRINT_ERROR("System", "ClientWS::error_connectWS_2\n"); return NULL; }
+ LOG_PRINT_DEBUG("System", p->str_out);
+ return p;
+};
+
+zClientWS* zPacketThread::connectWS6(const std::string& addr,unsigned short port, const std::string& path, const std::string& version, SSL_CTX* cctx, const std::map<std::string, std::string>& add_header)
+{
+ std::string adr=zDNS::host6(addr);
+ if(adr.empty())
+ {
+  LOG_PRINT_DEBUG("System", "zPacketThread::connectWS6 1\n");
+  return NULL;
+ }
+ int s=ZNSOCKET::async_socket6(adr, port);
+ if(s <= 0)
+ {
+  LOG_PRINT_DEBUG("System", "zPacketThread::connectWS6 2\n");
+  return NULL;
+ }
+ zClientWS* p= (zClientWS*) ws_client_pool.get(this);
+ if(p == NULL) { ZNSOCKET::close(s); LOG_PRINT_ERROR("System", "ClientWS6::error_connectWS6_1\n"); return NULL; }
  p->sock=s; p->parent= this; /*p->address=ZNSOCKET::getPeerAddress(s); p->peerport=ZNSOCKET::getPeerPort(s);*/
  p->host=ZNSTR::trim(addr); p->address=adr; p->port=port;
  if(cctx)
@@ -1373,8 +1439,46 @@ zClientHTTP* zPacketThread::connectHTTP(const std::string& addr,unsigned short p
  return p;
 };
 
+zClientHTTP* zPacketThread::connectHTTP6(const std::string& addr,unsigned short port, SSL_CTX* cctx)
+{
+ std::string adr=zDNS::host6(addr);
+ if(adr.empty())
+ {
+  LOG_PRINT_DEBUG("System", "zPacketThread::connectHTTP6 1\n");
+  return NULL;
+ }
+ int s=ZNSOCKET::async_socket6(adr, port);
+ if(s <= 0)
+ {
+  LOG_PRINT_DEBUG("System", "zPacketThread::connectHTTP6 2 "+adr+"\n");
+  return NULL;
+ }
+ zClientHTTP* p= (zClientHTTP*) http_client_pool.get(this);
+ if(p == NULL) { ZNSOCKET::close(s); LOG_PRINT_ERROR("System", "ClientHTTP::error_connectHTTP6_1\n"); return NULL; }
+ p->sock=s; p->parent= this; /*p->address=ZNSOCKET::getPeerAddress(s); p->peerport=ZNSOCKET::getPeerPort(s);*/
+ p->host=ZNSTR::trim(addr); p->address=adr; p->port=port; p->address_port=(p->address+':'+ZNSTR::toString(p->port));
+ if(cctx)
+ {
+  p->ssl= ZNSOCKET::socket(p->sock, cctx);
+  if(p->ssl == NULL) { p->push(); LOG_PRINT_ERROR("System", "ClientHTTP::connectHTTP6: error_ssl\n"); return NULL; }
+#ifdef SSL_MODE_ENABLE_PARTIAL_WRITE
+  SSL_set_mode(p->ssl, SSL_MODE_ENABLE_PARTIAL_WRITE);
+#endif
+#ifdef SSL_MODE_RELEASE_BUFFERS
+   SSL_set_mode(p->ssl, SSL_MODE_RELEASE_BUFFERS);
+#endif
+  SSL_set_tlsext_host_name(p->ssl, p->host.c_str());
+ }
+ if(p->create_event(ev_base, EV_TIMEOUT | EV_WRITE | EV_PERSIST, p, (p->time_out)?(p->time_out/1000):WRITE_TIMEOUT_SEC, (p->time_out)?(p->time_out%1000):WRITE_TIMEOUT_MSEC) == NULL)
+ { p->push(); LOG_PRINT_ERROR("System", "ClientHTTP::error_connectHTTP6_2\n"); return NULL; }
+ return p;
+};
+
 zClientHTTP* zPacketThread::getClientHTTP(const std::string& adr,unsigned short port)
 { return http_client_pool.get(zDNS::host(adr)+':'+ZNSTR::toString(port)); };
+
+zClientHTTP* zPacketThread::getClientHTTP6(const std::string& adr,unsigned short port)
+{ return http_client_pool.get(zDNS::host6(adr)+':'+ZNSTR::toString(port)); };
 
 void zPacketThread::exec_read(zPacketHTTP* p)
 {
