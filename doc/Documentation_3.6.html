@@ -2847,7 +2847,7 @@ To write log use the following macroses (zLog.h):<br><br>
 <hr width=100% color= #000000 align="center">
 <div  class="doctext">
 <span class="ifc">virtual zClientTCP* connectTCP(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);</span><br>
-<span class="ifc">virtual zClientTCP6* connectTCP(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);</span><br><br>
+<span class="ifc">virtual zClientTCP* connectTCP6(const std::string& adr,unsigned short port, SSL_CTX* cctx=NULL);</span><br><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tries to set connection to adr:port.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If cctx is not NULL the encrypted connection is established.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If connection has been established then onOpen(zClientTCP* p) is called.<br>
@@ -2859,7 +2859,7 @@ To write log use the following macroses (zLog.h):<br><br>
 <hr width=100% color= #000000 align="center">
 <div  class="doctext">
 <span class="ifc">virtual zClientWS* connectWS(const std::string& adr,unsigned short port, const std::string& path=&quot;/&quot;, const std::string& version=&quot;13&quot;, SSL_CTX* cctx=NULL, const std::map&lt;std::string, std::string&gt;& add_header=std::map&lt;std::string, std::string&gt;());</span><br>
-<span class="ifc">virtual zClientWS6* connectWS(const std::string& adr,unsigned short port, const std::string& path=&quot;/&quot;, const std::string& version=&quot;13&quot;, SSL_CTX* cctx=NULL, const std::map&lt;std::string, std::string&gt;& add_header=std::map&lt;std::string, std::string&gt;());</span><br><br>
+<span class="ifc">virtual zClientWS* connectWS6(const std::string& adr,unsigned short port, const std::string& path=&quot;/&quot;, const std::string& version=&quot;13&quot;, SSL_CTX* cctx=NULL, const std::map&lt;std::string, std::string&gt;& add_header=std::map&lt;std::string, std::string&gt;());</span><br><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tries to set connection to adr:port.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If cctx is not NULL the encrypted connection is established.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path - http path, version - ws version, add_header - additional header lines for request.<br>
