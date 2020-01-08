@@ -401,7 +401,7 @@ std::string ZNSTR::escape(const char* p, size_t len)
 
 std::string ZNSTR::escape(const std::string &s) { return ZNSTR::escape(s.c_str(), s.size()); };
 
-std::string ZNSTR::unescape(const char* p, size_t len)
+std::string ZNSTR::unescape(const char* p, size_t len, bool replus)
 {
  std::string ret; ret.reserve(len);
  char c;
@@ -409,7 +409,7 @@ std::string ZNSTR::unescape(const char* p, size_t len)
  for(size_t i = 0; i < len; i++)
  {
   c=p[i];
-//  if(c == '+') { ret+=' '; continue; }
+  if(replus && c == '+') { ret+=' '; continue; }
   if(c == '%' && (i+2) < len)
   {
    v=0;
@@ -474,7 +474,7 @@ std::string ZNSTR::unescape(const char* p, size_t len)
  return ret;
 };
 
-std::string ZNSTR::unescape(const std::string &s) { return ZNSTR::unescape(s.c_str(), s.size()); };
+std::string ZNSTR::unescape(const std::string &s, bool replus) { return ZNSTR::unescape(s.c_str(), s.size(), replus); };
 
 std::string ZNSTR::trim(const std::string &s, const std::string &q) 
 {
@@ -497,6 +497,7 @@ void ZNSTR::shrink(std::string &s, const std::string &q)
   s.erase(pos2+1);
   s.erase(0, pos1);
  }
+ else s.clear();
 };
 
 std::string ZNSTR::ltrim(const std::string &s, const std::string &q)

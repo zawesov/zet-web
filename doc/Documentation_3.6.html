@@ -130,10 +130,11 @@ ZET-WEB (not as the library) but as a part of your code(use your Makefile).<br>
 <div  class="doctext">
 <span class="ifc">std::string escape(const char* p, size_t len);</span><br>
 <span class="ifc">std::string escape(const std::string &s);</span><br>
-<span class="ifc">std::string unescape(const char* p, size_t len);</span><br>
-<span class="ifc">std::string unescape(const std::string &s);</span><br><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL escape/unescape (or encode/decode) string from/to url format.<br> 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t len - length p.
+<span class="ifc">std::string unescape(const char* p, size_t len, bool replus=false);</span><br>
+<span class="ifc">std::string unescape(const std::string &s, bool replus=false);</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL escape/unescape (or encode/decode) string from/to url format.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t len - length p.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if bool replus is true, the + (plus) symbol is replaced by a space.
 <br><br>
 </div>
 

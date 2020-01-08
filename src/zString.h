@@ -119,8 +119,8 @@ const char path_delimiter[] = "\\/";
 
  std::string escape(const char* p, size_t len);
  std::string escape(const std::string &s);
- std::string unescape(const char* p, size_t len);
- std::string unescape(const std::string &s);
+ std::string unescape(const char* p, size_t len, bool replus=false);
+ std::string unescape(const std::string &s, bool replus=false);
 /*
  URL escape/unescape (or encode/decode) string from/to url format.
  size_t len - length p. 
